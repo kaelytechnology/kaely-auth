@@ -88,7 +88,7 @@ class InstallCommand extends Command
         if (!$language) {
             $language = $this->choice(
                 $this->trans('language_selection.question'),
-                $this->trans('language_selection.options'),
+                $this->transArray('language_selection.options'),
                 'en'
             );
         }
@@ -122,6 +122,32 @@ class InstallCommand extends Command
         // Replace placeholders
         foreach ($replace as $placeholder => $replacement) {
             $value = str_replace(':' . $placeholder, $replacement, $value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Get translation array for current language
+     */
+    protected function transArray(string $key): array
+    {
+        $translations = $this->getTranslations();
+        
+        $keys = explode('.', $key);
+        $value = $translations;
+        
+        foreach ($keys as $k) {
+            if (isset($value[$k])) {
+                $value = $value[$k];
+            } else {
+                return []; // Return empty array if translation not found
+            }
+        }
+
+        // Ensure value is an array
+        if (!is_array($value)) {
+            return []; // Return empty array if value is not an array
         }
 
         return $value;
@@ -221,7 +247,7 @@ class InstallCommand extends Command
             
             $choice = $this->choice(
                 $this->trans('auth_packages.install_choice'),
-                $this->trans('auth_packages.install_options'),
+                $this->transArray('auth_packages.install_options'),
                 'sanctum'
             );
 
@@ -396,7 +422,7 @@ class InstallCommand extends Command
 
         $mode = $this->choice(
             $this->trans('database.mode_choice'),
-            $this->trans('database.mode_options'),
+            $this->transArray('database.mode_options'),
             'single'
         );
 
@@ -444,7 +470,7 @@ class InstallCommand extends Command
 
             $providers = $this->choice(
                 $this->trans('oauth.provider_choice'),
-                $this->trans('oauth.provider_options'),
+                $this->transArray('oauth.provider_options'),
                 'google'
             );
 
@@ -510,7 +536,7 @@ class InstallCommand extends Command
 
             $mode = $this->choice(
                 $this->trans('multitenancy.mode_choice'),
-                $this->trans('multitenancy.mode_options'),
+                $this->transArray('multitenancy.mode_options'),
                 'subdomain'
             );
 
