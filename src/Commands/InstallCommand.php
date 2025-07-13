@@ -114,6 +114,11 @@ class InstallCommand extends Command
             }
         }
 
+        // Ensure value is a string
+        if (!is_string($value)) {
+            return $key; // Return key if value is not a string
+        }
+
         // Replace placeholders
         foreach ($replace as $placeholder => $replacement) {
             $value = str_replace(':' . $placeholder, $replacement, $value);
