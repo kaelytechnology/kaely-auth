@@ -755,17 +755,22 @@ class InstallCommand extends Command
         $this->info("\n" . $this->trans('next_steps.title'));
         $this->info($this->trans('next_steps.subtitle'));
         $this->info("");
-        $this->info($this->trans('next_steps.steps_title'));
         
-        foreach ($this->trans('next_steps.steps') as $step) {
-            $this->info("1. {$step}");
+        $steps = $this->transArray('next_steps.steps');
+        if (!empty($steps)) {
+            $this->info("Próximos pasos:");
+            foreach ($steps as $index => $step) {
+                $this->info(($index + 1) . ". {$step}");
+            }
         }
         
         $this->info("");
-        $this->info($this->trans('next_steps.commands_title'));
-        
-        foreach ($this->trans('next_steps.commands') as $command) {
-            $this->info($command);
+        $commands = $this->transArray('next_steps.commands');
+        if (!empty($commands)) {
+            $this->info("Comandos disponibles:");
+            foreach ($commands as $command) {
+                $this->info($command);
+            }
         }
         
         $this->info("");
