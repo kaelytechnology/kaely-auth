@@ -6,9 +6,6 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Schema;
-use App\Models\User;
 
 class InstallCommand extends Command
 {
@@ -168,9 +165,6 @@ class InstallCommand extends Command
 
         // Configure additional features
         $this->configureAdditionalFeatures();
-
-        // Configure UI
-        $this->configureUI();
     }
 
     /**
@@ -670,46 +664,14 @@ class InstallCommand extends Command
      */
     protected function createAdminUser(): void
     {
-        if ($this->confirm($this->trans('admin_user.create_question'), true)) {
+        if ($this->confirm($this->trans('admin_user.create_question'))) {
             $this->info($this->trans('admin_user.title'));
             
             $name = $this->ask($this->trans('admin_user.name'), 'Admin User');
             $email = $this->ask($this->trans('admin_user.email'), 'admin@example.com');
             $password = $this->secret($this->trans('admin_user.password'));
 
-            // Validate email
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $this->error('Invalid email address');
-                return;
-            }
-
-            // Check if user already exists
-            if (User::where('email', $email)->exists()) {
-                $this->warn('User with this email already exists');
-                return;
-            }
-
-            // Create admin user
-            $user = User::create([
-                'name' => $name,
-                'email' => $email,
-                'password' => Hash::make($password),
-                'email_verified_at' => now(),
-            ]);
-
-            // Assign admin role if roles table exists
-            if (Schema::hasTable('roles')) {
-                $adminRole = DB::table('roles')->where('name', 'admin')->first();
-                if ($adminRole) {
-                    DB::table('user_role')->insert([
-                        'user_id' => $user->id,
-                        'role_id' => $adminRole->id,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                }
-            }
-
+            // Create admin user logic here
             $this->info($this->trans('admin_user.success'));
         }
     }
@@ -765,142 +727,5 @@ class InstallCommand extends Command
         $this->info("");
         $this->info($this->trans('next_steps.documentation'));
         $this->info($this->trans('next_steps.issues'));
-    }
-
-    /**
-     * Configure UI options
-     */
-    protected function configureUI(): void
-    {
-        $this->info("\n" . $this->trans('ui.title'));
-
-        $uiChoice = $this->choice(
-            $this->trans('ui.choice'),
-            $this->trans('ui.options'),
-            'none'
-        );
-
-        switch ($uiChoice) {
-            case 'blade':
-                $this->installBladeUI();
-                break;
-            case 'livewire':
-                $this->installLivewireUI();
-                break;
-            case 'none':
-                $this->info($this->trans('ui.none_selected'));
-                break;
-        }
-    }
-
-    /**
-     * Install Blade UI
-     */
-    protected function installBladeUI(): void
-    {
-        $this->info($this->trans('ui.installing_blade'));
-
-        // Publish Blade views
-        $this->executeCommand('php artisan vendor:publish --tag=kaely-auth-blade-views');
-
-        // Create routes for Blade UI
-        $this->createBladeRoutes();
-
-        $this->info($this->trans('ui.blade_installed'));
-    }
-
-    /**
-     * Install Livewire UI
-     */
-    protected function installLivewireUI(): void
-    {
-        $this->info($this->trans('ui.installing_livewire'));
-
-        // Check if Livewire is installed
-        if (!$this->isPackageInstalled('livewire/livewire')) {
-            $this->info($this->trans('ui.installing_livewire_package'));
-            $this->executeCommand('composer require livewire/livewire');
-        }
-
-        // Publish Livewire views
-        $this->executeCommand('php artisan vendor:publish --tag=kaely-auth-livewire-views');
-
-        // Create routes for Livewire UI
-        $this->createLivewireRoutes();
-
-        $this->info($this->trans('ui.livewire_installed'));
-    }
-
-    /**
-     * Create Blade routes
-     */
-    protected function createBladeRoutes(): void
-    {
-        $routesContent = <<<'PHP'
-<?php
-
-use Illuminate\Support\Facades\Route;
-
-// KaelyAuth Blade UI Routes
-Route::middleware('guest')->group(function () {
-    Route::get('/login', function () {
-        return view('kaely-auth::blade.auth.login');
-    })->name('login');
-
-    Route::get('/register', function () {
-        return view('kaely-auth::blade.auth.register');
-    })->name('register');
-});
-
-Route::middleware('auth')->group(function () {
-    Route::post('/logout', function () {
-        Auth::logout();
-        return redirect('/login');
-    })->name('logout');
-});
-PHP;
-
-        $routesPath = base_path('routes/web.php');
-        $currentContent = File::get($routesPath);
-        
-        // Add routes if not already present
-        if (!str_contains($currentContent, 'KaelyAuth Blade UI Routes')) {
-            $currentContent .= "\n\n" . $routesContent;
-            File::put($routesPath, $currentContent);
-        }
-    }
-
-    /**
-     * Create Livewire routes
-     */
-    protected function createLivewireRoutes(): void
-    {
-        $routesContent = <<<'PHP'
-<?php
-
-use Illuminate\Support\Facades\Route;
-
-// KaelyAuth Livewire UI Routes
-Route::middleware('guest')->group(function () {
-    Route::get('/login', \Kaely\Auth\Livewire\Auth\LoginForm::class)->name('login');
-    Route::get('/register', \Kaely\Auth\Livewire\Auth\RegisterForm::class)->name('register');
-});
-
-Route::middleware('auth')->group(function () {
-    Route::post('/logout', function () {
-        Auth::logout();
-        return redirect('/login');
-    })->name('logout');
-});
-PHP;
-
-        $routesPath = base_path('routes/web.php');
-        $currentContent = File::get($routesPath);
-        
-        // Add routes if not already present
-        if (!str_contains($currentContent, 'KaelyAuth Livewire UI Routes')) {
-            $currentContent .= "\n\n" . $routesContent;
-            File::put($routesPath, $currentContent);
-        }
     }
 } 

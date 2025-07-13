@@ -2,12 +2,12 @@
 
 namespace Kaely\Auth\Controllers;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
-use Illuminate\Routing\Controller;
 
 class OAuthController extends Controller
 {
