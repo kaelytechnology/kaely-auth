@@ -620,7 +620,7 @@ class InstallCommand extends Command
     /**
      * Execute command
      */
-    protected function executeCommand(string $command): void
+    protected function executeCommand(string $command, bool $throwOnError = true): void
     {
         $this->info("Executing: {$command}");
         
@@ -631,10 +631,12 @@ class InstallCommand extends Command
         
         if ($returnCode !== 0) {
             $this->error("Command failed: " . implode("\n", $output));
-            throw new \Exception("Command failed: {$command}");
+            if ($throwOnError) {
+                throw new \Exception("Command failed: {$command}");
+            }
+        } else {
+            $this->info("Command executed successfully");
         }
-        
-        $this->info("Command executed successfully");
     }
 
     /**
@@ -687,7 +689,18 @@ class InstallCommand extends Command
     {
         $this->info($this->trans('installation.running_migrations'));
         
-        $this->executeCommand('php artisan migrate');
+        try {
+            $this->executeCommand('php artisan migrate');
+        } catch (\Exception $e) {
+            // If migration fails, try to run with --force flag
+            $this->warn("Migration failed, trying with --force flag...");
+            try {
+                $this->executeCommand('php artisan migrate --force');
+            } catch (\Exception $e2) {
+                $this->warn("Some migrations may have failed, but installation will continue...");
+                $this->warn("You can run migrations manually later with: php artisan migrate");
+            }
+        }
     }
 
     /**
