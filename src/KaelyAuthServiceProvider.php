@@ -38,7 +38,8 @@ class KaelyAuthServiceProvider extends ServiceProvider
     public function register(): void
     {
         // Load configuration
-        $this->mergeConfigFrom(__DIR__ . '/config/kaely-auth.php', 'kaely-auth');
+        $this->mergeConfigFrom(__DIR__ . '/../config/kaely-auth.php', 'kaely-auth');
+        $this->mergeConfigFrom(__DIR__ . '/../config/security.php', 'kaely-auth-security');
 
         // Register services
         $this->registerServices();
@@ -74,37 +75,38 @@ class KaelyAuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Load migrations
-        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 
         // Load routes
-        $this->loadRoutesFrom(__DIR__ . '/routes/api_new.php');
+        $this->loadRoutesFrom(__DIR__ . '/../routes/api_new.php');
 
         // Load views
-        $this->loadViewsFrom(__DIR__ . '/resources/views', 'kaely-auth');
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'kaely-auth');
 
         // Publish configuration
         $this->publishes([
-            __DIR__ . '/config/kaely-auth.php' => config_path('kaely-auth.php'),
+            __DIR__ . '/../config/kaely-auth.php' => config_path('kaely-auth.php'),
+            __DIR__ . '/../config/security.php' => config_path('kaely-auth-security.php'),
         ], 'kaely-auth-config');
 
         // Publish migrations
         $this->publishes([
-            __DIR__ . '/database/migrations' => database_path('migrations'),
+            __DIR__ . '/../database/migrations' => database_path('migrations'),
         ], 'kaely-auth-migrations');
 
         // Publish views
         $this->publishes([
-            __DIR__ . '/resources/views' => resource_path('views/vendor/kaely-auth'),
+            __DIR__ . '/../resources/views' => resource_path('views/vendor/kaely-auth'),
         ], 'kaely-auth-views');
 
         // Publish Blade UI views
         $this->publishes([
-            __DIR__ . '/resources/views/blade' => resource_path('views/vendor/kaely-auth/blade'),
+            __DIR__ . '/../resources/views/blade' => resource_path('views/vendor/kaely-auth/blade'),
         ], 'kaely-auth-blade-views');
 
         // Publish Livewire UI views
         $this->publishes([
-            __DIR__ . '/resources/views/livewire' => resource_path('views/vendor/kaely-auth/livewire'),
+            __DIR__ . '/../resources/views/livewire' => resource_path('views/vendor/kaely-auth/livewire'),
         ], 'kaely-auth-livewire-views');
 
         // Register gates and policies
