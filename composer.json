@@ -1,5 +1,5 @@
 {
-    "name": "kaely/auth",
+    "name": "kaelytechnology/kaely-auth",
     "description": "Advanced authentication and authorization package for Laravel with multi-database support, OAuth integration, multitenancy, and comprehensive security features",
     "type": "library",
     "license": "MIT",
