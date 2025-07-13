@@ -1,0 +1,341 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-focused websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #2e8555;
+  --ifm-color-primary-dark: #29784c;
+  --ifm-color-primary-darker: #277148;
+  --ifm-color-primary-darkest: #205d3b;
+  --ifm-color-primary-light: #33925d;
+  --ifm-color-primary-lighter: #359962;
+  --ifm-color-primary-lightest: #3cad6e;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  --ifm-color-primary: #25c2a0;
+  --ifm-color-primary-dark: #21af90;
+  --ifm-color-primary-darker: #1fa588;
+  --ifm-color-primary-darkest: #1a8870;
+  --ifm-color-primary-light: #29d5b0;
+  --ifm-color-primary-lighter: #32d8b4;
+  --ifm-color-primary-lightest: #4fddbf;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* Custom styles for KaelyAuth documentation */
+
+/* Hero section styling */
+.hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4rem 0;
+}
+
+.hero__title {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.hero__subtitle {
+  font-size: 1.5rem;
+  opacity: 0.9;
+  margin-bottom: 2rem;
+}
+
+/* Feature cards */
+.feature-card {
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Code blocks */
+.prism-code {
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+/* API endpoint styling */
+.api-endpoint {
+  background: var(--ifm-color-emphasis-100);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  margin: 0.5rem 0;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.api-endpoint.get {
+  border-left: 4px solid #61dafb;
+}
+
+.api-endpoint.post {
+  border-left: 4px solid #28a745;
+}
+
+.api-endpoint.put {
+  border-left: 4px solid #ffc107;
+}
+
+.api-endpoint.delete {
+  border-left: 4px solid #dc3545;
+}
+
+/* Command styling */
+.command {
+  background: var(--ifm-color-emphasis-100);
+  border-radius: 6px;
+  padding: 1rem;
+  margin: 1rem 0;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.command-title {
+  font-weight: bold;
+  color: var(--ifm-color-primary);
+  margin-bottom: 0.5rem;
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.status-badge.success {
+  background: #28a745;
+  color: white;
+}
+
+.status-badge.warning {
+  background: #ffc107;
+  color: #212529;
+}
+
+.status-badge.error {
+  background: #dc3545;
+  color: white;
+}
+
+.status-badge.info {
+  background: #17a2b8;
+  color: white;
+}
+
+/* Table styling */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+th, td {
+  border: 1px solid var(--ifm-color-emphasis-300);
+  padding: 0.75rem;
+  text-align: left;
+}
+
+th {
+  background: var(--ifm-color-emphasis-100);
+  font-weight: bold;
+}
+
+/* Navigation improvements */
+.navbar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar__brand {
+  font-weight: bold;
+}
+
+/* Sidebar improvements */
+.menu__link {
+  border-radius: 4px;
+  margin: 0.125rem 0;
+}
+
+.menu__link--active {
+  background: var(--ifm-color-primary);
+  color: white;
+}
+
+/* Footer improvements */
+.footer {
+  background: var(--ifm-color-emphasis-900);
+  color: var(--ifm-color-emphasis-100);
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .hero__title {
+    font-size: 2rem;
+  }
+  
+  .hero__subtitle {
+    font-size: 1.25rem;
+  }
+  
+  .feature-card {
+    margin: 0.5rem 0;
+  }
+}
+
+/* Dark mode improvements */
+[data-theme='dark'] {
+  .feature-card {
+    border-color: var(--ifm-color-emphasis-400);
+  }
+  
+  .api-endpoint {
+    background: var(--ifm-color-emphasis-200);
+  }
+  
+  .command {
+    background: var(--ifm-color-emphasis-200);
+  }
+}
+
+/* Custom admonition styles */
+.admonition {
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.admonition-heading {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+/* Code copy button */
+.code-block-wrapper {
+  position: relative;
+}
+
+.code-block-wrapper button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: var(--ifm-color-emphasis-700);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.code-block-wrapper:hover button {
+  opacity: 1;
+}
+
+/* Search improvements */
+.aa-DetachedContainer {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Breadcrumb improvements */
+.breadcrumbs {
+  margin: 1rem 0;
+  font-size: 0.875rem;
+}
+
+.breadcrumbs__item {
+  color: var(--ifm-color-emphasis-600);
+}
+
+.breadcrumbs__item--active {
+  color: var(--ifm-color-emphasis-900);
+}
+
+/* Pagination improvements */
+.pagination-nav {
+  margin: 2rem 0;
+}
+
+.pagination-nav__link {
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 0.3s ease;
+}
+
+.pagination-nav__link:hover {
+  border-color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
+/* TOC improvements */
+.table-of-contents {
+  border-left: 2px solid var(--ifm-color-emphasis-300);
+  padding-left: 1rem;
+}
+
+.table-of-contents__link {
+  color: var(--ifm-color-emphasis-600);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.table-of-contents__link:hover {
+  color: var(--ifm-color-primary);
+}
+
+.table-of-contents__link--active {
+  color: var(--ifm-color-primary);
+  font-weight: bold;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ifm-color-emphasis-100);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ifm-color-emphasis-400);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ifm-color-emphasis-600);
+}
+
+/* Print styles */
+@media print {
+  .navbar,
+  .footer,
+  .pagination-nav,
+  .table-of-contents {
+    display: none;
+  }
+  
+  .main-wrapper {
+    margin: 0;
+    padding: 0;
+  }
+} 
