@@ -581,20 +581,53 @@ class InstallCommand extends Command
      */
     protected function isPackageInstalled(string $package): bool
     {
+        // Check composer.lock first
         $composerLockPath = base_path('composer.lock');
         
-        if (!File::exists($composerLockPath)) {
-            return false;
+        if (File::exists($composerLockPath)) {
+            $composerLock = json_decode(File::get($composerLockPath), true);
+            
+            if ($composerLock && isset($composerLock['packages'])) {
+                foreach ($composerLock['packages'] as $installedPackage) {
+                    if ($installedPackage['name'] === $package) {
+                        return true;
+                    }
+                }
+            }
         }
 
-        $composerLock = json_decode(File::get($composerLockPath), true);
+        // Check composer.json as fallback
+        $composerJsonPath = base_path('composer.json');
         
-        if (!$composerLock || !isset($composerLock['packages'])) {
-            return false;
+        if (File::exists($composerJsonPath)) {
+            $composerJson = json_decode(File::get($composerJsonPath), true);
+            
+            if ($composerJson) {
+                // Check require section
+                if (isset($composerJson['require']) && isset($composerJson['require'][$package])) {
+                    return true;
+                }
+                
+                // Check require-dev section
+                if (isset($composerJson['require-dev']) && isset($composerJson['require-dev'][$package])) {
+                    return true;
+                }
+            }
         }
 
-        foreach ($composerLock['packages'] as $installedPackage) {
-            if ($installedPackage['name'] === $package) {
+        // Special check for Laravel Sanctum in Laravel 12+
+        if ($package === 'laravel/sanctum') {
+            // Check if Sanctum service provider is registered
+            $configPath = config_path('app.php');
+            if (File::exists($configPath)) {
+                $configContent = File::get($configPath);
+                if (strpos($configContent, 'Laravel\\Sanctum\\SanctumServiceProvider') !== false) {
+                    return true;
+                }
+            }
+            
+            // Check if Sanctum config exists
+            if (File::exists(config_path('sanctum.php'))) {
                 return true;
             }
         }
