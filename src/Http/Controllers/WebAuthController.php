@@ -31,7 +31,11 @@ class WebAuthController extends Controller
                 return response('Login view not found. Please check if the package is properly installed.', 500);
             }
             
-            return view('kaely-auth::blade.auth.login');
+            // Share errors with the view
+            $errors = session('errors');
+            $status = session('status');
+            
+            return view('kaely-auth::blade.auth.login', compact('errors', 'status'));
         } catch (\Exception $e) {
             \Log::error('KaelyAuth: Error showing login form', [
                 'error' => $e->getMessage(),
@@ -49,25 +53,52 @@ class WebAuthController extends Controller
      */
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+        try {
+            $request->validate([
+                'email' => 'required|email',
+                'password' => 'required',
+            ]);
 
-        $credentials = $request->only('email', 'password');
-        $remember = $request->boolean('remember');
+            $credentials = $request->only('email', 'password');
+            $remember = $request->boolean('remember');
 
-        if (!Auth::attempt($credentials, $remember)) {
+            \Log::info('KaelyAuth: Attempting login', [
+                'email' => $request->email,
+                'remember' => $remember
+            ]);
+
+            if (!Auth::attempt($credentials, $remember)) {
+                \Log::warning('KaelyAuth: Login failed for email', ['email' => $request->email]);
+                
+                return back()
+                    ->withInput($request->only('email', 'remember'))
+                    ->withErrors([
+                        'email' => 'Las credenciales proporcionadas no coinciden con nuestros registros.',
+                    ]);
+            }
+
+            $user = Auth::user();
+            \Log::info('KaelyAuth: Login successful', [
+                'user_id' => $user->id,
+                'email' => $user->email
+            ]);
+
+            $request->session()->regenerate();
+
+            return redirect()->intended(route('dashboard'));
+        } catch (\Exception $e) {
+            \Log::error('KaelyAuth: Error during login', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            
             return back()
                 ->withInput($request->only('email', 'remember'))
                 ->withErrors([
-                    'email' => 'Las credenciales proporcionadas no coinciden con nuestros registros.',
+                    'email' => 'Error durante el inicio de sesión. Por favor, inténtalo de nuevo.',
                 ]);
         }
-
-        $request->session()->regenerate();
-
-        return redirect()->intended(route('dashboard'));
     }
 
     /**

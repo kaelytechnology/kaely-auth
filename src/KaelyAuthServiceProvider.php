@@ -27,7 +27,8 @@ use Kaely\Auth\Middleware\{
     EmailVerificationMiddleware,
     SessionActivityMiddleware,
     AuditLoggingMiddleware,
-    KaelyRoleMiddleware
+    KaelyRoleMiddleware,
+    ShareErrors
 };
 
 class KaelyAuthServiceProvider extends ServiceProvider
@@ -79,8 +80,9 @@ class KaelyAuthServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 
         // Load routes
-        $this->loadRoutesFrom(__DIR__ . '/../routes/api_new.php');
+        $this->loadRoutesFrom(__DIR__ . '/../routes/api_simple.php');
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        $this->loadRoutesFrom(__DIR__ . '/../routes/simple_test.php');
 
         // Load views
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'kaely-auth');
@@ -198,6 +200,9 @@ class KaelyAuthServiceProvider extends ServiceProvider
         $this->app['router']->aliasMiddleware('kaely.rate.limit', \Kaely\Auth\Middleware\RateLimitMiddleware::class);
 
         // Register security middleware
+        
+        // Register share errors middleware
+        $this->app['router']->aliasMiddleware('kaely.share.errors', ShareErrors::class);
         $this->app['router']->aliasMiddleware('kaely.security', \Kaely\Auth\Middleware\SecurityMiddleware::class);
 
         // Register performance middleware

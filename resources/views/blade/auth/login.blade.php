@@ -8,7 +8,7 @@
             <p>Inicia sesión en tu cuenta</p>
         </div>
 
-        @if ($errors->any())
+        @if (isset($errors) && $errors->any())
             <div class="alert alert-error">
                 <ul style="margin: 0; padding-left: 1rem;">
                     @foreach ($errors->all() as $error)
@@ -24,17 +24,29 @@
             </div>
         @endif
 
+        @if (session('error'))
+            <div class="alert alert-error">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('login.post') }}" class="kaely-auth-form">
             @csrf
 
             <div class="form-group">
                 <label for="email" class="form-label">Email</label>
-                <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus class="form-input">
+                <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus class="form-input @error('email') is-invalid @enderror">
+                @error('email')
+                    <span class="error-message">{{ $message }}</span>
+                @enderror
             </div>
 
             <div class="form-group">
                 <label for="password" class="form-label">Contraseña</label>
-                <input id="password" type="password" name="password" required class="form-input">
+                <input id="password" type="password" name="password" required class="form-input @error('password') is-invalid @enderror">
+                @error('password')
+                    <span class="error-message">{{ $message }}</span>
+                @enderror
             </div>
 
             <div class="form-group" style="display: flex; align-items: center; justify-content: space-between;">
@@ -60,4 +72,21 @@
         </div>
     </div>
 </div>
+
+<style>
+    .error-message {
+        color: #dc2626;
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+    
+    .is-invalid {
+        border-color: #dc2626 !important;
+    }
+    
+    .is-invalid:focus {
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+    }
+</style>
 @endsection 

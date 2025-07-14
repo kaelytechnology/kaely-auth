@@ -8,7 +8,7 @@ use Kaely\Auth\Http\Controllers\{
 };
 
 // Ensure web middleware is applied
-Route::middleware('web')->group(function () {
+Route::middleware(['web', 'kaely.share.errors'])->group(function () {
 
 // Test routes
 Route::get('/test', [WebTestController::class, 'test']);

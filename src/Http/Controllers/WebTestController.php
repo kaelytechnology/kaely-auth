@@ -20,8 +20,21 @@ class WebTestController extends Controller
     public function testLogin()
     {
         try {
+            \Log::info('KaelyAuth Web Test - Loading login view');
+            
+            if (!view()->exists('kaely-auth::blade.auth.login')) {
+                \Log::error('KaelyAuth Web Test - Login view not found');
+                return response('Login view not found. Check if package is properly installed.', 500);
+            }
+            
             return view('kaely-auth::blade.auth.login');
         } catch (\Exception $e) {
+            \Log::error('KaelyAuth Web Test - Error loading login view', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            
             return response('Error loading login view: ' . $e->getMessage(), 500);
         }
     }
