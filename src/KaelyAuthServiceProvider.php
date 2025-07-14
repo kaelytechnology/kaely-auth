@@ -51,6 +51,7 @@ class KaelyAuthServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 \Kaely\Auth\Commands\InstallCommand::class,
+                \Kaely\Auth\Commands\InstallApiCommand::class,
                 \Kaely\Auth\Commands\ExportLogsCommand::class,
                 \Kaely\Auth\Commands\InstallUICommand::class,
                 \Kaely\Auth\Commands\SetupOAuthCommand::class,

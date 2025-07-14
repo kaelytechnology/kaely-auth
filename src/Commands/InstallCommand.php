@@ -309,6 +309,10 @@ class InstallCommand extends Command
         // Run Sanctum migrations
         $this->executeCommand('php artisan migrate');
         
+        // Install API authentication
+        $this->info('🔧 Installing API authentication...');
+        $this->executeCommand('php artisan install:api');
+        
         $this->info($this->trans('auth_packages.installed_success', ['package' => 'Sanctum']));
     }
 
