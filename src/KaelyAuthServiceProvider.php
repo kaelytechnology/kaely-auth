@@ -156,6 +156,11 @@ class KaelyAuthServiceProvider extends ServiceProvider
         $this->app->alias(TenantManagerInterface::class, 'kaely.tenant');
         $this->app->alias(ConnectionResolverInterface::class, 'kaely.connection');
 
+        // Register KaelyAuthManager
+        $this->app->singleton(\Kaely\Auth\KaelyAuthManager::class, function ($app) {
+            return new \Kaely\Auth\KaelyAuthManager($app);
+        });
+
         // Register additional services
         $this->app->singleton(PasswordResetService::class);
         $this->app->singleton(EmailVerificationService::class);
@@ -329,6 +334,7 @@ class KaelyAuthServiceProvider extends ServiceProvider
         return [
             TenantManagerInterface::class,
             ConnectionResolverInterface::class,
+            \Kaely\Auth\KaelyAuthManager::class,
             PasswordResetService::class,
             EmailVerificationService::class,
             SessionManagementService::class,
