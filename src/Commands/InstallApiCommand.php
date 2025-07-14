@@ -10,7 +10,7 @@ class InstallApiCommand extends Command
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'install:api {--force : Skip confirmation prompts} {--no-interaction : Do not ask any interactive questions}';
+    protected $signature = 'install:api {--force : Skip confirmation prompts}';
 
     /**
      * The console command description.
@@ -25,7 +25,7 @@ class InstallApiCommand extends Command
         $this->info('🚀 Installing API Authentication with Laravel Sanctum...');
 
         // Check if we should run in non-interactive mode
-        $noInteraction = $this->option('no-interaction') || $this->option('force');
+        $noInteraction = $this->option('force') || $this->option('no-interaction');
 
         // Install Sanctum if not already installed
         $this->installSanctum($noInteraction);
