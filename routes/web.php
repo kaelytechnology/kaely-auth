@@ -1,10 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Kaely\Auth\Controllers\{
-    AuthController,
+use Kaely\Auth\Http\Controllers\{
+    WebAuthController,
     OAuthController
 };
+
+// Ensure web middleware is applied
+Route::middleware('web')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
@@ -19,42 +22,30 @@ use Kaely\Auth\Controllers\{
 // Public routes
 Route::middleware('guest')->group(function () {
     // Login routes
-    Route::get('/login', function () {
-        return view('kaely-auth::blade.auth.login');
-    })->name('login');
-    
-    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    Route::get('/login', [WebAuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [WebAuthController::class, 'login'])->name('login.post');
     
     // Register routes
-    Route::get('/register', function () {
-        return view('kaely-auth::blade.auth.register');
-    })->name('register');
-    
-    Route::post('/register', [AuthController::class, 'register'])->name('register.post');
+    Route::get('/register', [WebAuthController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [WebAuthController::class, 'register'])->name('register.post');
     
     // Password reset routes
-    Route::get('/forgot-password', function () {
-        return view('kaely-auth::blade.auth.forgot-password');
-    })->name('password.request');
+    Route::get('/forgot-password', [WebAuthController::class, 'showPasswordResetForm'])->name('password.request');
+    Route::post('/forgot-password', [WebAuthController::class, 'sendPasswordResetLink'])->name('password.email');
     
-    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
-    
-    Route::get('/reset-password/{token}', function ($token) {
-        return view('kaely-auth::blade.auth.reset-password', ['token' => $token]);
-    })->name('password.reset');
-    
-    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+    Route::get('/reset-password/{token}', [WebAuthController::class, 'showPasswordResetFormWithToken'])->name('password.reset');
+    Route::post('/reset-password', [WebAuthController::class, 'resetPassword'])->name('password.update');
     
     // Email verification routes
     Route::get('/verify-email', function () {
         return view('kaely-auth::blade.auth.verify-email');
     })->name('verification.notice');
     
-    Route::get('/verify-email/{id}/{hash}', [AuthController::class, 'verifyEmail'])
+    Route::get('/verify-email/{id}/{hash}', [WebAuthController::class, 'verifyEmail'])
         ->middleware(['auth', 'signed'])
         ->name('verification.verify');
     
-    Route::post('/email/verification-notification', [AuthController::class, 'resendVerificationEmail'])
+    Route::post('/email/verification-notification', [WebAuthController::class, 'resendVerificationEmail'])
         ->middleware(['auth', 'throttle:6,1'])
         ->name('verification.send');
 });
@@ -62,26 +53,24 @@ Route::middleware('guest')->group(function () {
 // Protected routes
 Route::middleware('auth')->group(function () {
     // Dashboard
-    Route::get('/dashboard', function () {
-        return view('kaely-auth::blade.dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [WebAuthController::class, 'dashboard'])->name('dashboard');
     
     // Profile
     Route::get('/profile', function () {
         return view('kaely-auth::blade.profile');
     })->name('profile');
     
-    Route::put('/profile', [AuthController::class, 'updateProfile'])->name('profile.update');
+    Route::put('/profile', [WebAuthController::class, 'updateProfile'])->name('profile.update');
     
     // Password change
     Route::get('/change-password', function () {
         return view('kaely-auth::blade.auth.change-password');
     })->name('password.change');
     
-    Route::put('/change-password', [AuthController::class, 'updatePassword'])->name('password.update');
+    Route::put('/change-password', [WebAuthController::class, 'updatePassword'])->name('password.update');
     
     // Logout
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::post('/logout', [WebAuthController::class, 'logout'])->name('logout');
     
     // OAuth routes (if enabled)
     if (config('kaely-auth.oauth.enabled', false)) {
@@ -110,4 +99,5 @@ Route::middleware(['auth', 'kaely.permission:admin_access'])->prefix('admin')->g
     Route::get('/audit', function () {
         return view('kaely-auth::blade.admin.audit');
     })->name('admin.audit');
-}); 
+});
+}); // Close web middleware group
