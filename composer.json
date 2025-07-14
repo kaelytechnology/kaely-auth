@@ -26,7 +26,7 @@
         "php": "^8.2",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
-        "laravel/socialite": "^6.0"
+        "laravel/socialite": "^5.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^11.0",
@@ -62,6 +62,7 @@
         "source": "https://github.com/kaely/auth",
         "docs": "https://github.com/kaely/auth/blob/main/README.md"
     },
-    "homepage": "https://github.com/kaely/auth",
+    "homepage": "https://github.com/kaely/auth", 
     "version": "1.0.0"
+
 } 

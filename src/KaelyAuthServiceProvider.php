@@ -38,7 +38,8 @@ class KaelyAuthServiceProvider extends ServiceProvider
     public function register(): void
     {
         // Load configuration
-        $this->mergeConfigFrom(__DIR__ . '/config/kaely-auth.php', 'kaely-auth');
+        $this->mergeConfigFrom(__DIR__ . '/../config/kaely-auth.php', 'kaely-auth');
+        $this->mergeConfigFrom(__DIR__ . '/../config/security.php', 'kaely-auth-security');
 
         // Register services
         $this->registerServices();
@@ -50,6 +51,7 @@ class KaelyAuthServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 \Kaely\Auth\Commands\InstallCommand::class,
+                \Kaely\Auth\Commands\InstallApiCommand::class,
                 \Kaely\Auth\Commands\ExportLogsCommand::class,
                 \Kaely\Auth\Commands\InstallUICommand::class,
                 \Kaely\Auth\Commands\SetupOAuthCommand::class,
@@ -74,38 +76,53 @@ class KaelyAuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Load migrations
-        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 
         // Load routes
-        $this->loadRoutesFrom(__DIR__ . '/routes/api_new.php');
+        $this->loadRoutesFrom(__DIR__ . '/../routes/api_new.php');
+        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
 
         // Load views
-        $this->loadViewsFrom(__DIR__ . '/resources/views', 'kaely-auth');
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'kaely-auth');
 
         // Publish configuration
         $this->publishes([
-            __DIR__ . '/config/kaely-auth.php' => config_path('kaely-auth.php'),
+            __DIR__ . '/../config/kaely-auth.php' => config_path('kaely-auth.php'),
+            __DIR__ . '/../config/security.php' => config_path('kaely-auth-security.php'),
         ], 'kaely-auth-config');
 
         // Publish migrations
         $this->publishes([
-            __DIR__ . '/database/migrations' => database_path('migrations'),
+            __DIR__ . '/../database/migrations' => database_path('migrations'),
         ], 'kaely-auth-migrations');
 
         // Publish views
         $this->publishes([
-            __DIR__ . '/resources/views' => resource_path('views/vendor/kaely-auth'),
+            __DIR__ . '/../resources/views' => resource_path('views/vendor/kaely-auth'),
         ], 'kaely-auth-views');
 
         // Publish Blade UI views
         $this->publishes([
-            __DIR__ . '/resources/views/blade' => resource_path('views/vendor/kaely-auth/blade'),
+            __DIR__ . '/../resources/views/blade' => resource_path('views/vendor/kaely-auth/blade'),
         ], 'kaely-auth-blade-views');
 
         // Publish Livewire UI views
         $this->publishes([
-            __DIR__ . '/resources/views/livewire' => resource_path('views/vendor/kaely-auth/livewire'),
+            __DIR__ . '/../resources/views/livewire' => resource_path('views/vendor/kaely-auth/livewire'),
         ], 'kaely-auth-livewire-views');
+
+        // Publish Livewire components (combined tag)
+        $this->publishes([
+            __DIR__ . '/../resources/views/livewire' => resource_path('views/vendor/kaely-auth/livewire'),
+            __DIR__ . '/../src/Livewire' => app_path('Http/Livewire/KaelyAuth'),
+        ], 'kaely-auth-livewire');
+
+        // Publish assets (CSS, JS, images)
+        $this->publishes([
+            __DIR__ . '/../resources/css' => public_path('vendor/kaely-auth/css'),
+            __DIR__ . '/../resources/js' => public_path('vendor/kaely-auth/js'),
+            __DIR__ . '/../resources/images' => public_path('vendor/kaely-auth/images'),
+        ], 'kaely-auth-assets');
 
         // Register gates and policies
         $this->registerGates();
@@ -138,6 +155,11 @@ class KaelyAuthServiceProvider extends ServiceProvider
         // Register service aliases
         $this->app->alias(TenantManagerInterface::class, 'kaely.tenant');
         $this->app->alias(ConnectionResolverInterface::class, 'kaely.connection');
+
+        // Register KaelyAuthManager
+        $this->app->singleton(\Kaely\Auth\KaelyAuthManager::class, function ($app) {
+            return new \Kaely\Auth\KaelyAuthManager($app);
+        });
 
         // Register additional services
         $this->app->singleton(PasswordResetService::class);
@@ -312,6 +334,7 @@ class KaelyAuthServiceProvider extends ServiceProvider
         return [
             TenantManagerInterface::class,
             ConnectionResolverInterface::class,
+            \Kaely\Auth\KaelyAuthManager::class,
             PasswordResetService::class,
             EmailVerificationService::class,
             SessionManagementService::class,

@@ -7,147 +7,249 @@ use Illuminate\Support\Facades\File;
 
 class InstallUICommand extends Command
 {
-    protected $signature = 'kaely:install-ui {type : The UI type (blade, livewire)}';
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'kaely:install-ui 
+                            {type : Type of UI to install (blade/livewire)}
+                            {--force : Force installation without confirmation}';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
     protected $description = 'Install KaelyAuth UI components';
 
-    public function handle()
+    /**
+     * Execute the console command.
+     */
+    public function handle(): int
     {
         $type = $this->argument('type');
+        $force = $this->option('force');
 
-        switch ($type) {
-            case 'blade':
-                $this->installBladeUI();
-                break;
-            case 'livewire':
-                $this->installLivewireUI();
-                break;
-            default:
-                $this->error('Invalid UI type. Use "blade" or "livewire".');
-                return 1;
+        if (!in_array($type, ['blade', 'livewire'])) {
+            $this->error('Invalid UI type. Please choose "blade" or "livewire".');
+            return Command::FAILURE;
         }
 
-        return 0;
+        if (!$force && !$this->confirm("Are you sure you want to install {$type} UI components?")) {
+            $this->info('Installation cancelled.');
+            return Command::SUCCESS;
+        }
+
+        try {
+            switch ($type) {
+                case 'blade':
+                    $this->installBladeUI();
+                    break;
+                case 'livewire':
+                    $this->installLivewireUI();
+                    break;
+            }
+
+            $this->info("✅ {$type} UI components installed successfully!");
+            $this->displayNextSteps($type);
+
+            return Command::SUCCESS;
+        } catch (\Exception $e) {
+            $this->error("❌ Failed to install {$type} UI: " . $e->getMessage());
+            return Command::FAILURE;
+        }
     }
 
-    protected function installBladeUI()
+    /**
+     * Install Blade UI components
+     */
+    protected function installBladeUI(): void
     {
-        $this->info('Installing Blade UI...');
-
+        $this->info('📦 Installing Blade UI components...');
+        
         // Publish Blade views
-        $this->call('vendor:publish', ['--tag' => 'kaely-auth-blade-views']);
-
-        // Create routes
-        $this->createBladeRoutes();
-
-        $this->info('Blade UI installed successfully!');
-        $this->info('Routes added to web.php');
-        $this->info('Views published to resources/views/vendor/kaely-auth/blade');
+        $this->executeCommand('php artisan vendor:publish --tag=kaely-auth-views --force');
+        
+        // Publish assets
+        $this->executeCommand('php artisan vendor:publish --tag=kaely-auth-assets --force');
+        
+        // Create web routes file
+        $this->createWebRoutesFile();
+        
+        $this->info('✅ Blade UI components installed successfully!');
     }
 
-    protected function installLivewireUI()
+    /**
+     * Install Livewire UI components
+     */
+    protected function installLivewireUI(): void
     {
-        $this->info('Installing Livewire UI...');
-
-        // Check if Livewire is installed
+        $this->info('📦 Installing Livewire UI components...');
+        
+        // Install Livewire if not already installed
         if (!$this->isPackageInstalled('livewire/livewire')) {
-            $this->info('Installing Livewire package...');
+            $this->info('📦 Installing Livewire package...');
             $this->executeCommand('composer require livewire/livewire');
         }
-
-        // Publish Livewire views
-        $this->call('vendor:publish', ['--tag' => 'kaely-auth-livewire-views']);
-
-        // Create routes
-        $this->createLivewireRoutes();
-
-        $this->info('Livewire UI installed successfully!');
-        $this->info('Routes added to web.php');
-        $this->info('Views published to resources/views/vendor/kaely-auth/livewire');
-    }
-
-    protected function createBladeRoutes()
-    {
-        $routesContent = <<<'PHP'
-<?php
-
-use Illuminate\Support\Facades\Route;
-
-// KaelyAuth Blade UI Routes
-Route::middleware('guest')->group(function () {
-    Route::get('/login', function () {
-        return view('kaely-auth::blade.auth.login');
-    })->name('login');
-
-    Route::get('/register', function () {
-        return view('kaely-auth::blade.auth.register');
-    })->name('register');
-});
-
-Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('kaely-auth::blade.dashboard');
-    })->name('dashboard');
-
-    Route::post('/logout', function () {
-        Auth::logout();
-        return redirect('/login');
-    })->name('logout');
-});
-PHP;
-
-        $this->addRoutesToFile($routesContent, 'KaelyAuth Blade UI Routes');
-    }
-
-    protected function createLivewireRoutes()
-    {
-        $routesContent = <<<'PHP'
-<?php
-
-use Illuminate\Support\Facades\Route;
-
-// KaelyAuth Livewire UI Routes
-Route::middleware('guest')->group(function () {
-    Route::get('/login', \Kaely\Auth\Livewire\Auth\LoginForm::class)->name('login');
-    Route::get('/register', \Kaely\Auth\Livewire\Auth\RegisterForm::class)->name('register');
-});
-
-Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('kaely-auth::blade.dashboard');
-    })->name('dashboard');
-
-    Route::post('/logout', function () {
-        Auth::logout();
-        return redirect('/login');
-    })->name('logout');
-});
-PHP;
-
-        $this->addRoutesToFile($routesContent, 'KaelyAuth Livewire UI Routes');
-    }
-
-    protected function addRoutesToFile($routesContent, $comment)
-    {
-        $routesPath = base_path('routes/web.php');
-        $currentContent = File::get($routesPath);
         
-        // Add routes if not already present
-        if (!str_contains($currentContent, $comment)) {
-            $currentContent .= "\n\n" . $routesContent;
-            File::put($routesPath, $currentContent);
+        // Publish Livewire views
+        $this->executeCommand('php artisan vendor:publish --tag=kaely-auth-livewire --force');
+        
+        // Publish assets
+        $this->executeCommand('php artisan vendor:publish --tag=kaely-auth-assets --force');
+        
+        // Create web routes file
+        $this->createWebRoutesFile();
+        
+        $this->info('✅ Livewire UI components installed successfully!');
+    }
+
+    /**
+     * Check if package is installed
+     */
+    protected function isPackageInstalled(string $package): bool
+    {
+        $composerLockPath = base_path('composer.lock');
+        
+        if (File::exists($composerLockPath)) {
+            $composerLock = json_decode(File::get($composerLockPath), true);
+            
+            if ($composerLock && isset($composerLock['packages'])) {
+                foreach ($composerLock['packages'] as $installedPackage) {
+                    if ($installedPackage['name'] === $package) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Execute command
+     */
+    protected function executeCommand(string $command): void
+    {
+        $this->info("Executing: {$command}");
+        
+        $output = [];
+        $returnCode = 0;
+        
+        exec($command . ' 2>&1', $output, $returnCode);
+        
+        if ($returnCode !== 0) {
+            $this->error("Command failed: " . implode("\n", $output));
+            throw new \Exception("Command failed: {$command}");
+        } else {
+            $this->info("Command executed successfully");
         }
     }
 
-    protected function isPackageInstalled($package)
+    /**
+     * Create web routes file
+     */
+    protected function createWebRoutesFile(): void
     {
-        $composerJson = json_decode(File::get(base_path('composer.json')), true);
-        return isset($composerJson['require'][$package]);
+        $this->info('🛣️ Creating web routes file...');
+        
+        $routesPath = base_path('routes/web.php');
+        
+        if (!File::exists($routesPath)) {
+            $webRoutesContent = $this->getWebRoutesFileContent();
+            File::put($routesPath, $webRoutesContent);
+            $this->info('✅ Web routes file created at routes/web.php');
+        } else {
+            $this->info('✅ Web routes file already exists');
+        }
     }
 
-    protected function executeCommand($command)
+    /**
+     * Get web routes file content
+     */
+    protected function getWebRoutesFileContent(): string
     {
-        $this->info("Executing: $command");
-        $output = shell_exec($command . ' 2>&1');
-        $this->info($output);
+        return <<<'PHP'
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make something great!
+|
+*/
+
+Route::get('/', function () {
+    return view('welcome');
+});
+
+// KaelyAuth routes are automatically loaded by the package
+// Available routes:
+// - /login (GET, POST)
+// - /register (GET, POST)
+// - /forgot-password (GET, POST)
+// - /reset-password/{token} (GET, POST)
+// - /verify-email (GET)
+// - /dashboard (GET) - requires auth
+// - /profile (GET, PUT) - requires auth
+// - /change-password (GET, PUT) - requires auth
+// - /logout (POST) - requires auth
+// - /admin/* (GET) - requires auth and admin permissions
+PHP;
+    }
+
+    /**
+     * Display next steps
+     */
+    protected function displayNextSteps(string $type): void
+    {
+        $this->info("\n🎉 UI installation complete!");
+        $this->info("=====================");
+        
+        switch ($type) {
+            case 'blade':
+                $this->info("\nNext steps for Blade UI:");
+                $this->info("1. Include the CSS file in your layout:");
+                $this->info("   <link rel=\"stylesheet\" href=\"/vendor/kaely-auth/css/kaely-auth.css\">");
+                $this->info("2. Include the JavaScript file in your layout:");
+                $this->info("   <script src=\"/vendor/kaely-auth/js/kaely-auth.js\"></script>");
+                $this->info("3. Web routes are automatically loaded by the package");
+                $this->info("4. Available routes:");
+                $this->info("   - /login (GET, POST)");
+                $this->info("   - /register (GET, POST)");
+                $this->info("   - /dashboard (GET) - requires auth");
+                $this->info("   - /profile (GET, PUT) - requires auth");
+                $this->info("   - /logout (POST) - requires auth");
+                break;
+                
+            case 'livewire':
+                $this->info("\nNext steps for Livewire UI:");
+                $this->info("1. Include the CSS file in your layout:");
+                $this->info("   <link rel=\"stylesheet\" href=\"/vendor/kaely-auth/css/kaely-auth.css\">");
+                $this->info("2. Include the JavaScript file in your layout:");
+                $this->info("   <script src=\"/vendor/kaely-auth/js/kaely-auth.js\"></script>");
+                $this->info("3. Web routes are automatically loaded by the package");
+                $this->info("4. Available routes:");
+                $this->info("   - /login (GET, POST)");
+                $this->info("   - /register (GET, POST)");
+                $this->info("   - /dashboard (GET) - requires auth");
+                $this->info("   - /profile (GET, PUT) - requires auth");
+                $this->info("   - /logout (POST) - requires auth");
+                $this->info("5. Make sure Livewire is properly configured in your app");
+                break;
+        }
+        
+        $this->info("\n📖 Documentation: https://kaely-auth.com/docs/ui");
+        $this->info("🐛 Issues: https://github.com/kaelytechnology/kaely-auth/issues");
+        $this->info("\n💡 Note: The UI components are designed to work without Vite.");
+        $this->info("   If you see Vite manifest errors, they can be safely ignored.");
+        $this->info("   The components use CDN resources and inline styles for compatibility.");
     }
 } 

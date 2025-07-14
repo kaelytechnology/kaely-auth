@@ -5,49 +5,47 @@
     <div class="auth-card">
         <div class="auth-header">
             <h1>{{ config('app.name', 'Laravel') }}</h1>
-            <p>Crea tu cuenta</p>
+            <p>Restablecer contraseña</p>
         </div>
 
-        @if ($errors->any())
+                @if ($errors->any())
             <div class="alert alert-error">
                 <ul style="margin: 0; padding-left: 1rem;">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
                 </ul>
             </div>
         @endif
 
-        <form method="POST" action="{{ route('register.post') }}" class="kaely-auth-form">
+        <form method="POST" action="{{ route('password.update') }}" class="kaely-auth-form">
             @csrf
 
-            <div class="form-group">
-                <label for="name" class="form-label">Nombre</label>
-                <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus class="form-input">
-            </div>
+            <!-- Password Reset Token -->
+            <input type="hidden" name="token" value="{{ $token }}">
 
             <div class="form-group">
                 <label for="email" class="form-label">Email</label>
-                <input id="email" type="email" name="email" value="{{ old('email') }}" required class="form-input">
+                <input id="email" type="email" name="email" value="{{ $email ?? old('email') }}" required autofocus class="form-input">
             </div>
 
             <div class="form-group">
-                <label for="password" class="form-label">Contraseña</label>
+                <label for="password" class="form-label">Nueva contraseña</label>
                 <input id="password" type="password" name="password" required class="form-input">
             </div>
 
             <div class="form-group">
-                <label for="password_confirmation" class="form-label">Confirmar Contraseña</label>
+                <label for="password_confirmation" class="form-label">Confirmar nueva contraseña</label>
                 <input id="password_confirmation" type="password" name="password_confirmation" required class="form-input">
             </div>
 
             <button type="submit" class="form-button">
-                Registrarse
+                Restablecer contraseña
             </button>
         </form>
 
         <div class="auth-links">
-            <p>¿Ya tienes una cuenta? <a href="{{ route('login') }}">Inicia sesión aquí</a></p>
+            <p><a href="{{ route('login') }}">Volver al login</a></p>
         </div>
     </div>
 </div>

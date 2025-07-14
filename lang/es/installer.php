@@ -37,6 +37,7 @@ return [
         ],
         'installing' => '📦 Instalando :package...',
         'installed_success' => '✅ ¡:package instalado exitosamente!',
+        'installed_packages' => 'Paquetes instalados:',
         'additional_packages' => '📦 Paquetes adicionales disponibles:',
         'install_additional' => '¿Te gustaría instalar paquetes de autenticación adicionales?',
         'install_specific' => '¿Te gustaría instalar :description?',

@@ -2,6 +2,21 @@
 
 All notable changes to the KaelyAuth package will be documented in this file.
 
+## [1.0.0] - 2024-12-19 - STABLE RELEASE
+
+### 🔧 Bug Fixes
+- **Fixed**: ServiceProvider configuration paths for config, migrations, views, and routes
+- **Fixed**: Corrected file paths from `src/config/` to `config/` directory
+- **Fixed**: Corrected file paths from `src/database/` to `database/` directory  
+- **Fixed**: Corrected file paths from `src/resources/` to `resources/` directory
+- **Fixed**: Corrected file paths from `src/routes/` to `routes/` directory
+
+### 🚀 Stability Improvements
+- **Enhanced**: Package structure and file organization
+- **Improved**: ServiceProvider registration and configuration loading
+- **Optimized**: File path resolution for all package resources
+- **Standardized**: Package structure following Laravel conventions
+
 ## [1.0.0] - 2024-12-19
 
 ### 🎉 Initial Release
