@@ -36,8 +36,8 @@ class InstallApiCommand extends Command
         // Run migrations
         $this->runMigrations($noInteraction);
 
-        // Note: API routes are handled by the package's own route file
-        $this->info('✅ API routes are automatically loaded by the package');
+        // Create API routes file in project root
+        $this->createApiRoutesFile();
 
         // Create API controllers (only if they don't exist)
         $this->createApiControllers();
@@ -48,16 +48,23 @@ class InstallApiCommand extends Command
         $this->info('✅ API authentication installed successfully!');
         $this->info('');
         $this->info('📋 Next steps:');
-        $this->info('1. Configure your API routes in routes/api.php');
-        $this->info('2. Set up your frontend to use the API endpoints');
-        $this->info('3. Test the API with: php artisan route:list --path=api');
-        $this->info('4. Available endpoints:');
+        $this->info('1. API routes file created at routes/api.php');
+        $this->info('2. Add your custom API routes in routes/api.php');
+        $this->info('3. Set up your frontend to use the API endpoints');
+        $this->info('4. Test the API with: php artisan route:list --path=api');
+        $this->info('');
+        $this->info('🔐 Available KaelyAuth endpoints:');
         $this->info('   - POST /api/auth/register');
         $this->info('   - POST /api/auth/login');
         $this->info('   - POST /api/auth/logout (requires auth)');
         $this->info('   - POST /api/auth/refresh (requires auth)');
         $this->info('   - GET /api/user (requires auth)');
         $this->info('   - PUT /api/user (requires auth)');
+        $this->info('');
+        $this->info('📝 Example custom route:');
+        $this->info('   Route::get("/api/v1/test", function() {');
+        $this->info('       return response()->json(["message" => "Hello API!"]);');
+        $this->info('   });');
 
         return Command::SUCCESS;
     }
@@ -144,6 +151,74 @@ class InstallApiCommand extends Command
     }
 
 
+
+    /**
+     * Create API routes file in project root
+     */
+    protected function createApiRoutesFile(): void
+    {
+        $this->info('🛣️ Creating API routes file...');
+        
+        $routesPath = base_path('routes/api.php');
+        
+        if (!File::exists($routesPath)) {
+            $apiRoutesContent = $this->getApiRoutesFileContent();
+            File::put($routesPath, $apiRoutesContent);
+            $this->info('✅ API routes file created at routes/api.php');
+        } else {
+            $this->info('✅ API routes file already exists');
+        }
+    }
+
+    /**
+     * Get API routes file content
+     */
+    protected function getApiRoutesFileContent(): string
+    {
+        return <<<'PHP'
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "api" middleware group. Make something great!
+|
+*/
+
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
+
+// Tus rutas API personalizadas aquí
+Route::prefix('v1')->group(function () {
+    // Ejemplo de rutas para tu aplicación
+    Route::get('/test', function () {
+        return response()->json(['message' => 'API funcionando correctamente']);
+    });
+    
+    // Aquí puedes agregar más rutas de tu aplicación
+    // Route::apiResource('products', ProductController::class);
+    // Route::apiResource('categories', CategoryController::class);
+    // etc.
+});
+
+// KaelyAuth API Routes (automatically loaded by the package)
+// Las rutas de autenticación están disponibles en:
+// - POST /api/auth/register
+// - POST /api/auth/login
+// - POST /api/auth/logout (requires auth)
+// - POST /api/auth/refresh (requires auth)
+// - GET /api/user (requires auth)
+// - PUT /api/user (requires auth)
+PHP;
+    }
 
     /**
      * Create API controllers
