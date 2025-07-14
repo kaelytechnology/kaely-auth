@@ -581,7 +581,37 @@ class InstallCommand extends Command
      */
     protected function isPackageInstalled(string $package): bool
     {
-        // Check composer.lock first
+        // Special check for Laravel Sanctum - only consider it installed if properly configured
+        if ($package === 'laravel/sanctum') {
+            // Check if Sanctum config exists (this means it was published)
+            if (File::exists(config_path('sanctum.php'))) {
+                return true;
+            }
+            
+            // Check if Sanctum service provider is registered in config/app.php
+            $configPath = config_path('app.php');
+            if (File::exists($configPath)) {
+                $configContent = File::get($configPath);
+                if (strpos($configContent, 'Laravel\\Sanctum\\SanctumServiceProvider') !== false) {
+                    return true;
+                }
+            }
+            
+            // Check if Sanctum migrations exist and have been run
+            $migrationsPath = database_path('migrations');
+            if (File::exists($migrationsPath)) {
+                $migrationFiles = File::glob($migrationsPath . '/*_create_personal_access_tokens_table.php');
+                if (!empty($migrationFiles)) {
+                    return true;
+                }
+            }
+            
+            // For Laravel 12+, Sanctum is included by default but not configured
+            // So we consider it NOT installed until it's properly set up
+            return false;
+        }
+
+        // For other packages, check composer.lock and composer.json
         $composerLockPath = base_path('composer.lock');
         
         if (File::exists($composerLockPath)) {
@@ -613,36 +643,6 @@ class InstallCommand extends Command
                     return true;
                 }
             }
-        }
-
-        // Special check for Laravel Sanctum in Laravel 12+
-        if ($package === 'laravel/sanctum') {
-            // Check if Sanctum is actually configured and working
-            // First check if Sanctum config exists (this means it was published)
-            if (File::exists(config_path('sanctum.php'))) {
-                return true;
-            }
-            
-            // Check if Sanctum service provider is registered in config/app.php
-            $configPath = config_path('app.php');
-            if (File::exists($configPath)) {
-                $configContent = File::get($configPath);
-                if (strpos($configContent, 'Laravel\\Sanctum\\SanctumServiceProvider') !== false) {
-                    return true;
-                }
-            }
-            
-            // Check if Sanctum migrations exist and have been run
-            $migrationsPath = database_path('migrations');
-            if (File::exists($migrationsPath)) {
-                $migrationFiles = File::glob($migrationsPath . '/*_create_personal_access_tokens_table.php');
-                if (!empty($migrationFiles)) {
-                    return true;
-                }
-            }
-            
-            // If none of the above, Sanctum is not properly installed
-            return false;
         }
 
         return false;
