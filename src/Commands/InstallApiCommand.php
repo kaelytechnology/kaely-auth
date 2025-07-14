@@ -59,7 +59,7 @@ class InstallApiCommand extends Command
         $this->info('   - GET /api/user (requires auth)');
         $this->info('   - PUT /api/user (requires auth)');
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**
@@ -113,7 +113,10 @@ class InstallApiCommand extends Command
     protected function publishSanctumConfig(bool $noInteraction = false): void
     {
         $this->info('📋 Publishing Sanctum configuration...');
-        $command = $noInteraction ? 'php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider" --force' : 'php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"';
+        $command = 'php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"';
+        if ($noInteraction) {
+            $command .= ' --force';
+        }
         $this->executeCommand($command);
     }
 
@@ -438,7 +441,7 @@ PHP;
         $returnCode = 0;
         
         // For interactive commands, we need to handle them differently
-        if (strpos($command, 'vendor:publish') !== false) {
+        if (strpos($command, 'vendor:publish') !== false && strpos($command, '--force') === false) {
             // Use --force flag to avoid interactive prompts
             $command = str_replace('vendor:publish', 'vendor:publish --force', $command);
         }

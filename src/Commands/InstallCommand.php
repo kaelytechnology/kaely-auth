@@ -301,7 +301,7 @@ class InstallCommand extends Command
         $this->info($this->trans('auth_packages.installing', ['package' => 'Laravel Sanctum']));
         
         // Use the dedicated install:api command which handles everything
-        $this->executeCommand('php artisan install:api --no-interaction');
+        $this->executeCommand('php artisan install:api --force');
         
         $this->info($this->trans('auth_packages.installed_success', ['package' => 'Sanctum']));
     }
