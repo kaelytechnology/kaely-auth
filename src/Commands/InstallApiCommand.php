@@ -22,14 +22,7 @@ class InstallApiCommand extends Command
      */
     public function handle(): int
     {
-        $this->info('🚀 Installing API Authentication...');
-
-        // Check if Sanctum is installed
-        if (!$this->isSanctumInstalled()) {
-            $this->error('❌ Laravel Sanctum is not installed. Please install it first.');
-            $this->info('Run: composer require laravel/sanctum');
-            return 1;
-        }
+        $this->info('🚀 Installing API Authentication with Laravel Sanctum...');
 
         // Install Sanctum if not already installed
         $this->installSanctum();
@@ -55,6 +48,13 @@ class InstallApiCommand extends Command
         $this->info('1. Configure your API routes in routes/api.php');
         $this->info('2. Set up your frontend to use the API endpoints');
         $this->info('3. Test the API with: php artisan route:list --path=api');
+        $this->info('4. Available endpoints:');
+        $this->info('   - POST /api/auth/register');
+        $this->info('   - POST /api/auth/login');
+        $this->info('   - POST /api/auth/logout (requires auth)');
+        $this->info('   - POST /api/auth/refresh (requires auth)');
+        $this->info('   - GET /api/user (requires auth)');
+        $this->info('   - PUT /api/user (requires auth)');
 
         return 0;
     }
@@ -64,7 +64,30 @@ class InstallApiCommand extends Command
      */
     protected function isSanctumInstalled(): bool
     {
-        return File::exists(config_path('sanctum.php'));
+        // Check if Sanctum config exists (this means it was published)
+        if (File::exists(config_path('sanctum.php'))) {
+            return true;
+        }
+        
+        // Check if Sanctum service provider is registered in config/app.php
+        $configPath = config_path('app.php');
+        if (File::exists($configPath)) {
+            $configContent = File::get($configPath);
+            if (strpos($configContent, 'Laravel\\Sanctum\\SanctumServiceProvider') !== false) {
+                return true;
+            }
+        }
+        
+        // Check if Sanctum migrations exist
+        $migrationsPath = database_path('migrations');
+        if (File::exists($migrationsPath)) {
+            $migrationFiles = File::glob($migrationsPath . '/*_create_personal_access_tokens_table.php');
+            if (!empty($migrationFiles)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     /**
@@ -95,7 +118,19 @@ class InstallApiCommand extends Command
     protected function runMigrations(): void
     {
         $this->info('🗄️ Running migrations...');
-        $this->executeCommand('php artisan migrate');
+        
+        try {
+            $this->executeCommand('php artisan migrate');
+        } catch (\Exception $e) {
+            // If migration fails, try to run with --force flag
+            $this->warn("Migration failed, trying with --force flag...");
+            try {
+                $this->executeCommand('php artisan migrate --force');
+            } catch (\Exception $e2) {
+                $this->warn("Some migrations may have failed, but installation will continue...");
+                $this->warn("You can run migrations manually later with: php artisan migrate");
+            }
+        }
     }
 
     /**
@@ -388,7 +423,7 @@ PHP;
     /**
      * Execute command
      */
-    protected function executeCommand(string $command): void
+    protected function executeCommand(string $command, bool $throwOnError = true): void
     {
         $this->info("Executing: {$command}");
         
@@ -399,9 +434,11 @@ PHP;
         
         if ($returnCode !== 0) {
             $this->error("Command failed: " . implode("\n", $output));
-            throw new \Exception("Command failed: {$command}");
+            if ($throwOnError) {
+                throw new \Exception("Command failed: {$command}");
+            }
+        } else {
+            $this->info("Command executed successfully");
         }
-        
-        $this->info("Command executed successfully");
     }
 } 

@@ -300,17 +300,7 @@ class InstallCommand extends Command
     {
         $this->info($this->trans('auth_packages.installing', ['package' => 'Laravel Sanctum']));
         
-        // Install via composer
-        $this->executeCommand('composer require laravel/sanctum');
-        
-        // Publish Sanctum configuration
-        $this->executeCommand('php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"');
-        
-        // Run Sanctum migrations
-        $this->executeCommand('php artisan migrate');
-        
-        // Install API authentication
-        $this->info('🔧 Installing API authentication...');
+        // Use the dedicated install:api command which handles everything
         $this->executeCommand('php artisan install:api');
         
         $this->info($this->trans('auth_packages.installed_success', ['package' => 'Sanctum']));
