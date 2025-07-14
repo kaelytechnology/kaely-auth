@@ -2,82 +2,39 @@
 
 namespace Kaely\Auth\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Kaely\Auth\Traits\HasUserFields;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Permission extends Model
 {
-    use HasFactory, SoftDeletes, HasUserFields;
+    use HasFactory;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'main_permissions';
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'slug',
         'description',
-        'module_id',
+        'module',
         'is_active',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'is_active' => 'boolean',
     ];
 
     /**
-     * Get the roles that belong to the permission.
+     * Get the users that have this permission.
+     */
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_permissions', 'permission_id', 'user_id');
+    }
+
+    /**
+     * Get the roles that have this permission.
      */
     public function roles()
     {
-        return $this->belongsToMany(Role::class, 'main_role_permission', 'permission_id', 'role_id');
-    }
-
-    /**
-     * Get the module that belongs to the permission.
-     */
-    public function module()
-    {
-        return $this->belongsTo(Module::class, 'module_id');
-    }
-
-    /**
-     * Scope a query to only include active permissions.
-     */
-    public function scopeActive($query)
-    {
-        return $query->where('is_active', true);
-    }
-
-    /**
-     * Scope a query to only include inactive permissions.
-     */
-    public function scopeInactive($query)
-    {
-        return $query->where('is_active', false);
-    }
-
-    /**
-     * Scope a query to only include permissions by module.
-     */
-    public function scopeByModule($query, $moduleId)
-    {
-        return $query->where('module_id', $moduleId);
+        return $this->belongsToMany(Role::class, 'role_permissions', 'permission_id', 'role_id');
     }
 
     /**

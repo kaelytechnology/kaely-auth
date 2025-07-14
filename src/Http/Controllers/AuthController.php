@@ -39,10 +39,12 @@ class AuthController extends Controller
             ]);
         }
 
-        $user = $this->authManager->getUser();
+        $user = Auth::user();
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
+            'success' => true,
+            'message' => 'Login successful',
             'user' => $user,
             'token' => $token,
             'permissions' => $this->authManager->getUserPermissions($user),
@@ -78,6 +80,8 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
+            'success' => true,
+            'message' => 'Registration successful',
             'user' => $user,
             'token' => $token,
             'permissions' => $this->authManager->getUserPermissions($user),

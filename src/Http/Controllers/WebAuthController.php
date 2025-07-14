@@ -9,6 +9,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
 use Kaely\Auth\KaelyAuthManager;
+use Kaely\Auth\Models\User;
 
 class WebAuthController extends Controller
 {
@@ -24,7 +25,24 @@ class WebAuthController extends Controller
      */
     public function showLoginForm()
     {
-        return view('kaely-auth::blade.auth.login');
+        try {
+            // Check if the view exists
+            if (!view()->exists('kaely-auth::blade.auth.login')) {
+                \Log::error('KaelyAuth: Login view not found');
+                return response('Login view not found. Please check if the package is properly installed.', 500);
+            }
+            
+            return view('kaely-auth::blade.auth.login');
+        } catch (\Exception $e) {
+            \Log::error('KaelyAuth: Error showing login form', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response('An error occurred while loading the login form. Check the logs for details.', 500);
+        }
     }
 
     /**
@@ -66,23 +84,35 @@ class WebAuthController extends Controller
      */
     public function register(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => 'required|string|min:8|confirmed',
+            ]);
 
-        $user = \App\Models\User::create([
+                    $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
-        Auth::login($user);
+            Auth::login($user);
 
-        $request->session()->regenerate();
+            $request->session()->regenerate();
 
-        return redirect()->route('dashboard');
+            return redirect()->route('dashboard');
+        } catch (\Exception $e) {
+            \Log::error('KaelyAuth: Error during registration', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            
+            return back()
+                ->withInput($request->only('name', 'email'))
+                ->withErrors(['email' => 'Error during registration. Please try again.']);
+        }
     }
 
     /**
@@ -183,7 +213,7 @@ class WebAuthController extends Controller
      */
     public function verifyEmail(Request $request, $id, $hash)
     {
-        $user = \App\Models\User::find($id);
+        $user = User::find($id);
 
         if (!$user || !hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
             return redirect()->route('login')->withErrors(['email' => 'Invalid verification link.']);
