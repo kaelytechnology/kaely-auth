@@ -110,6 +110,19 @@ class KaelyAuthServiceProvider extends ServiceProvider
             __DIR__ . '/../resources/views/livewire' => resource_path('views/vendor/kaely-auth/livewire'),
         ], 'kaely-auth-livewire-views');
 
+        // Publish Livewire components (combined tag)
+        $this->publishes([
+            __DIR__ . '/../resources/views/livewire' => resource_path('views/vendor/kaely-auth/livewire'),
+            __DIR__ . '/../src/Livewire' => app_path('Http/Livewire/KaelyAuth'),
+        ], 'kaely-auth-livewire');
+
+        // Publish assets (CSS, JS, images)
+        $this->publishes([
+            __DIR__ . '/../resources/css' => public_path('vendor/kaely-auth/css'),
+            __DIR__ . '/../resources/js' => public_path('vendor/kaely-auth/js'),
+            __DIR__ . '/../resources/images' => public_path('vendor/kaely-auth/images'),
+        ], 'kaely-auth-assets');
+
         // Register gates and policies
         $this->registerGates();
 

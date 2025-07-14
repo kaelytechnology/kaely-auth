@@ -133,7 +133,7 @@ php artisan kaely:install --language=es
 
 The installer will automatically detect your preference and provide all prompts in the selected language.
 
-## 🎨 UI Options
+## 🎨 UI Components
 
 KaelyAuth provides optional UI components that you can choose during installation:
 
@@ -142,12 +142,14 @@ KaelyAuth provides optional UI components that you can choose during installatio
 - No additional dependencies required
 - Simple and lightweight
 - Perfect for traditional applications
+- Includes CSS and JavaScript components
 
 ### Livewire UI (Interactive)
 - Real-time interactive components
 - Requires Livewire package
 - Modern reactive experience
 - Perfect for dynamic applications
+- Includes CSS and JavaScript components
 
 ### Custom UI
 - No UI installed by default
@@ -177,17 +179,72 @@ php artisan kaely:install-ui blade
 
 # Install Livewire UI
 php artisan kaely:install-ui livewire
+
+# Force installation without confirmation
+php artisan kaely:install-ui blade --force
 ```
 
-Or publish views manually:
+### UI Components Included
+
+Both UI options include:
+
+#### CSS Components
+- Modern, responsive design
+- Form styling with validation states
+- Button components with hover effects
+- Alert components (success, error, warning, info)
+- Navigation components
+- Table components with sorting
+- Badge components
+- Mobile-responsive design
+
+#### JavaScript Components
+- Form validation and submission
+- AJAX form handling
+- Alert system with auto-dismiss
+- Table sorting functionality
+- Navigation highlighting
+- Date/time formatting utilities
+
+#### Usage Examples
+
+**Blade UI:**
+```html
+<!-- Include in your layout -->
+<link rel="stylesheet" href="/vendor/kaely-auth/css/kaely-auth.css">
+<script src="/vendor/kaely-auth/js/kaely-auth.js"></script>
+
+<!-- Use components -->
+@include('kaely-auth::blade.auth.login')
+@include('kaely-auth::blade.auth.register')
+@include('kaely-auth::blade.dashboard')
+```
+
+**Livewire UI:**
+```html
+<!-- Include in your layout -->
+<link rel="stylesheet" href="/vendor/kaely-auth/css/kaely-auth.css">
+<script src="/vendor/kaely-auth/js/kaely-auth.js"></script>
+
+<!-- Use components -->
+<livewire:kaely-auth.login-form />
+<livewire:kaely-auth.register-form />
+<livewire:kaely-auth.dashboard />
+```
+
+### Publishing Assets
+
+You can also publish assets manually:
 
 ```bash
-# Install Blade UI
-php artisan vendor:publish --tag=kaely-auth-blade-views
+# Publish all UI assets
+php artisan vendor:publish --tag=kaely-auth-assets
 
-# Install Livewire UI
-composer require livewire/livewire
-php artisan vendor:publish --tag=kaely-auth-livewire-views
+# Publish Blade views
+php artisan vendor:publish --tag=kaely-auth-views
+
+# Publish Livewire components
+php artisan vendor:publish --tag=kaely-auth-livewire
 ```
 
 ## 🏢 Multibase de Datos Dinámica

@@ -301,7 +301,7 @@ class InstallCommand extends Command
         $this->info($this->trans('auth_packages.installing', ['package' => 'Laravel Sanctum']));
         
         // Use the dedicated install:api command which handles everything
-        $this->executeCommand('php artisan install:api');
+        $this->executeCommand('php artisan install:api --no-interaction');
         
         $this->info($this->trans('auth_packages.installed_success', ['package' => 'Sanctum']));
     }
@@ -568,6 +568,73 @@ class InstallCommand extends Command
         // Audit Logging
         $enableAuditLogging = $this->confirm($this->trans('features.audit_logging'), true);
         $this->updateEnvFile(['KAELY_AUTH_AUDIT_ENABLED' => $enableAuditLogging ? 'true' : 'false']);
+
+        // UI Components
+        $this->configureUI();
+    }
+
+    /**
+     * Configure UI components
+     */
+    protected function configureUI(): void
+    {
+        $this->info("\n" . $this->trans('ui.title'));
+
+        $uiChoice = $this->choice(
+            $this->trans('ui.choice'),
+            $this->transArray('ui.options'),
+            'blade'
+        );
+
+        switch ($uiChoice) {
+            case 'blade':
+                $this->installBladeUI();
+                break;
+            case 'livewire':
+                $this->installLivewireUI();
+                break;
+            case 'none':
+                $this->info($this->trans('ui.none_selected'));
+                break;
+        }
+    }
+
+    /**
+     * Install Blade UI components
+     */
+    protected function installBladeUI(): void
+    {
+        $this->info($this->trans('ui.installing_blade'));
+        
+        // Publish Blade views
+        $this->executeCommand('php artisan vendor:publish --tag=kaely-auth-views --force');
+        
+        // Publish assets
+        $this->executeCommand('php artisan vendor:publish --tag=kaely-auth-assets --force');
+        
+        $this->info($this->trans('ui.blade_installed'));
+    }
+
+    /**
+     * Install Livewire UI components
+     */
+    protected function installLivewireUI(): void
+    {
+        $this->info($this->trans('ui.installing_livewire'));
+        
+        // Install Livewire if not already installed
+        if (!$this->isPackageInstalled('livewire/livewire')) {
+            $this->info($this->trans('ui.installing_livewire_package'));
+            $this->executeCommand('composer require livewire/livewire');
+        }
+        
+        // Publish Livewire views
+        $this->executeCommand('php artisan vendor:publish --tag=kaely-auth-livewire --force');
+        
+        // Publish assets
+        $this->executeCommand('php artisan vendor:publish --tag=kaely-auth-assets --force');
+        
+        $this->info($this->trans('ui.livewire_installed'));
     }
 
     /**

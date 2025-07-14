@@ -10,7 +10,7 @@ class InstallApiCommand extends Command
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'install:api {--force : Skip confirmation prompts}';
+    protected $signature = 'install:api {--force : Skip confirmation prompts} {--no-interaction : Do not ask any interactive questions}';
 
     /**
      * The console command description.
@@ -24,14 +24,17 @@ class InstallApiCommand extends Command
     {
         $this->info('🚀 Installing API Authentication with Laravel Sanctum...');
 
+        // Check if we should run in non-interactive mode
+        $noInteraction = $this->option('no-interaction') || $this->option('force');
+
         // Install Sanctum if not already installed
-        $this->installSanctum();
+        $this->installSanctum($noInteraction);
 
         // Publish Sanctum configuration
-        $this->publishSanctumConfig();
+        $this->publishSanctumConfig($noInteraction);
 
         // Run migrations
-        $this->runMigrations();
+        $this->runMigrations($noInteraction);
 
         // Create API routes
         $this->createApiRoutes();
@@ -93,11 +96,12 @@ class InstallApiCommand extends Command
     /**
      * Install Laravel Sanctum
      */
-    protected function installSanctum(): void
+    protected function installSanctum(bool $noInteraction = false): void
     {
         if (!$this->isSanctumInstalled()) {
             $this->info('📦 Installing Laravel Sanctum...');
-            $this->executeCommand('composer require laravel/sanctum');
+            $command = $noInteraction ? 'composer require laravel/sanctum --no-interaction' : 'composer require laravel/sanctum';
+            $this->executeCommand($command);
         } else {
             $this->info('✅ Laravel Sanctum is already installed');
         }
@@ -106,24 +110,27 @@ class InstallApiCommand extends Command
     /**
      * Publish Sanctum configuration
      */
-    protected function publishSanctumConfig(): void
+    protected function publishSanctumConfig(bool $noInteraction = false): void
     {
         $this->info('📋 Publishing Sanctum configuration...');
-        $this->executeCommand('php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"');
+        $command = $noInteraction ? 'php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider" --force' : 'php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"';
+        $this->executeCommand($command);
     }
 
     /**
      * Run migrations
      */
-    protected function runMigrations(): void
+    protected function runMigrations(bool $noInteraction = false): void
     {
         $this->info('🗄️ Running migrations...');
         
         try {
-            $this->executeCommand('php artisan migrate');
+            // Try with --force first to avoid interactive prompts
+            $command = $noInteraction ? 'php artisan migrate --force' : 'php artisan migrate';
+            $this->executeCommand($command);
         } catch (\Exception $e) {
-            // If migration fails, try to run with --force flag
-            $this->warn("Migration failed, trying with --force flag...");
+            // If that fails, try without --force
+            $this->warn("Migration failed, trying with --force...");
             try {
                 $this->executeCommand('php artisan migrate --force');
             } catch (\Exception $e2) {
@@ -429,6 +436,12 @@ PHP;
         
         $output = [];
         $returnCode = 0;
+        
+        // For interactive commands, we need to handle them differently
+        if (strpos($command, 'vendor:publish') !== false) {
+            // Use --force flag to avoid interactive prompts
+            $command = str_replace('vendor:publish', 'vendor:publish --force', $command);
+        }
         
         exec($command . ' 2>&1', $output, $returnCode);
         
