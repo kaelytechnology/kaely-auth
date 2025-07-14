@@ -414,6 +414,16 @@ class InstallCommand extends Command
     {
         $this->info("\n" . $this->trans('database.title'));
 
+        // First, ask for database engine
+        $engine = $this->choice(
+            $this->trans('database.engine.question'),
+            $this->transArray('database.engine.options'),
+            'mysql'
+        );
+
+        // Configure database engine
+        $this->configureDatabaseEngine($engine);
+
         $mode = $this->choice(
             $this->trans('database.mode_choice'),
             $this->transArray('database.mode_options'),
@@ -429,6 +439,105 @@ class InstallCommand extends Command
                 'KAELY_AUTH_DB_PREFIX' => '',
             ]);
         }
+    }
+
+    /**
+     * Configure database engine
+     */
+    protected function configureDatabaseEngine(string $engine): void
+    {
+        $this->info("\n" . $this->trans('database.engine.config'));
+
+        switch ($engine) {
+            case 'sqlite':
+                $this->configureSqlite();
+                break;
+            case 'mysql':
+                $this->configureMysql();
+                break;
+            case 'postgresql':
+                $this->configurePostgresql();
+                break;
+            default:
+                $this->configureMysql();
+                break;
+        }
+    }
+
+    /**
+     * Configure SQLite database
+     */
+    protected function configureSqlite(): void
+    {
+        $this->info($this->trans('database.engine.sqlite.config'));
+        
+        $databasePath = $this->ask(
+            $this->trans('database.engine.sqlite.path'),
+            database_path('database.sqlite')
+        );
+
+        // Create SQLite database file if it doesn't exist
+        if (!file_exists($databasePath)) {
+            touch($databasePath);
+            $this->info($this->trans('database.engine.sqlite.created'));
+        }
+
+        $this->updateEnvFile([
+            'DB_CONNECTION' => 'sqlite',
+            'DB_DATABASE' => $databasePath,
+        ]);
+
+        $this->info($this->trans('database.engine.sqlite.configured'));
+    }
+
+    /**
+     * Configure MySQL database
+     */
+    protected function configureMysql(): void
+    {
+        $this->info($this->trans('database.engine.mysql.config'));
+        
+        $host = $this->ask($this->trans('database.engine.mysql.host'), '127.0.0.1');
+        $port = $this->ask($this->trans('database.engine.mysql.port'), '3306');
+        $database = $this->ask($this->trans('database.engine.mysql.database'), 'laravel');
+        $username = $this->ask($this->trans('database.engine.mysql.username'), 'root');
+        $password = $this->secret($this->trans('database.engine.mysql.password'));
+
+        $this->updateEnvFile([
+            'DB_CONNECTION' => 'mysql',
+            'DB_HOST' => $host,
+            'DB_PORT' => $port,
+            'DB_DATABASE' => $database,
+            'DB_USERNAME' => $username,
+            'DB_PASSWORD' => $password,
+        ]);
+
+        $this->info($this->trans('database.engine.mysql.configured'));
+    }
+
+    /**
+     * Configure PostgreSQL database
+     */
+    protected function configurePostgresql(): void
+    {
+        $this->info($this->trans('database.engine.postgresql.config'));
+        
+        $host = $this->ask($this->trans('database.engine.postgresql.host'), '127.0.0.1');
+        $port = $this->ask($this->trans('database.engine.postgresql.port'), '5432');
+        $database = $this->ask($this->trans('database.engine.postgresql.database'), 'laravel');
+        $username = $this->ask($this->trans('database.engine.postgresql.username'), 'postgres');
+        $password = $this->secret($this->trans('database.engine.postgresql.password'));
+
+        $this->updateEnvFile([
+            'DB_CONNECTION' => 'pgsql',
+            'DB_HOST' => $host,
+            'DB_PORT' => $port,
+            'DB_DATABASE' => $database,
+            'DB_USERNAME' => $username,
+            'DB_PASSWORD' => $password,
+        ]);
+
+        $this->info($this->trans('database.engine.postgresql.configured'));
     }
 
     /**

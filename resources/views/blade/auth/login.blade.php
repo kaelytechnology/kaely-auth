@@ -8,7 +8,12 @@
             <p>Inicia sesión en tu cuenta</p>
         </div>
 
-        @if (isset($errors) && $errors->any())
+        @php
+            $errors = $errors ?? session('errors');
+            $hasErrors = $errors && $errors->any();
+        @endphp
+
+        @if ($hasErrors)
             <div class="alert alert-error">
                 <ul style="margin: 0; padding-left: 1rem;">
                     @foreach ($errors->all() as $error)
@@ -35,18 +40,18 @@
 
             <div class="form-group">
                 <label for="email" class="form-label">Email</label>
-                <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus class="form-input @error('email') is-invalid @enderror">
-                @error('email')
-                    <span class="error-message">{{ $message }}</span>
-                @enderror
+                <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus class="form-input {{ $hasErrors && $errors->has('email') ? 'is-invalid' : '' }}">
+                @if ($hasErrors && $errors->has('email'))
+                    <span class="error-message">{{ $errors->first('email') }}</span>
+                @endif
             </div>
 
             <div class="form-group">
                 <label for="password" class="form-label">Contraseña</label>
-                <input id="password" type="password" name="password" required class="form-input @error('password') is-invalid @enderror">
-                @error('password')
-                    <span class="error-message">{{ $message }}</span>
-                @enderror
+                <input id="password" type="password" name="password" required class="form-input {{ $hasErrors && $errors->has('password') ? 'is-invalid' : '' }}">
+                @if ($hasErrors && $errors->has('password'))
+                    <span class="error-message">{{ $errors->first('password') }}</span>
+                @endif
             </div>
 
             <div class="form-group" style="display: flex; align-items: center; justify-content: space-between;">
