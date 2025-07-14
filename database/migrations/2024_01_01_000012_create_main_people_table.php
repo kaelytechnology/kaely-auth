@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('first_name');
             $table->string('last_name');
-            $table->string('email')->unique();
+            $table->string('email', 191)->unique();
             $table->string('phone')->nullable();
             $table->date('birth_date')->nullable();
             $table->string('gender')->nullable();
@@ -31,7 +31,8 @@ return new class extends Migration
 
             $table->index('email');
             $table->index('is_active');
-            $table->index(['first_name', 'last_name']);
+            // Limit the length of the composite index to avoid MySQL key length issues
+            $table->index(['first_name', 'last_name'], 'main_people_name_index', 'btree', 191);
         });
     }
 

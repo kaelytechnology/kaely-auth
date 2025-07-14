@@ -27,9 +27,9 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
-            $table->index(['user_id', 'created_at']);
-            $table->index(['action', 'created_at']);
-            $table->index(['status', 'created_at']);
+            $table->index(['user_id', 'created_at'], 'audit_logs_user_created_index');
+            $table->index(['action', 'created_at'], 'audit_logs_action_created_index');
+            $table->index(['status', 'created_at'], 'audit_logs_status_created_index');
             $table->index('created_at');
             $table->index('tenant_id');
             $table->index('connection_name');

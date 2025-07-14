@@ -65,6 +65,7 @@ class KaelyAuthServiceProvider extends ServiceProvider
                 \Kaely\Auth\Commands\OptimizePerformanceCommand::class,
                 \Kaely\Auth\Commands\HealthCheckCommand::class,
                 \Kaely\Auth\Commands\TestLoginCommand::class,
+                \Kaely\Auth\Commands\FixDatabaseCommand::class,
             ]);
         }
 

@@ -24,8 +24,8 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->index(['user_id', 'is_active']);
-            $table->index(['token_id', 'is_active']);
+            $table->index(['user_id', 'is_active'], 'user_sessions_user_active_index');
+            $table->index(['token_id', 'is_active'], 'user_sessions_token_active_index');
             $table->index('expires_at');
         });
     }

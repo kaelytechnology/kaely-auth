@@ -14,14 +14,14 @@ return new class extends Migration
         Schema::create('email_verifications', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->string('email');
+            $table->string('email', 191);
             $table->string('token', 64)->unique();
             $table->timestamp('expires_at');
             $table->timestamp('verified_at')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->index(['user_id', 'email']);
+            $table->index(['user_id', 'email'], 'email_verifications_user_email_index');
             $table->index('token');
         });
     }
