@@ -74,6 +74,9 @@ class InstallUICommand extends Command
         // Publish assets
         $this->executeCommand('php artisan vendor:publish --tag=kaely-auth-assets --force');
         
+        // Create web routes file
+        $this->createWebRoutesFile();
+        
         $this->info('✅ Blade UI components installed successfully!');
     }
 
@@ -95,6 +98,9 @@ class InstallUICommand extends Command
         
         // Publish assets
         $this->executeCommand('php artisan vendor:publish --tag=kaely-auth-assets --force');
+        
+        // Create web routes file
+        $this->createWebRoutesFile();
         
         $this->info('✅ Livewire UI components installed successfully!');
     }
@@ -142,6 +148,64 @@ class InstallUICommand extends Command
     }
 
     /**
+     * Create web routes file
+     */
+    protected function createWebRoutesFile(): void
+    {
+        $this->info('🛣️ Creating web routes file...');
+        
+        $routesPath = base_path('routes/web.php');
+        
+        if (!File::exists($routesPath)) {
+            $webRoutesContent = $this->getWebRoutesFileContent();
+            File::put($routesPath, $webRoutesContent);
+            $this->info('✅ Web routes file created at routes/web.php');
+        } else {
+            $this->info('✅ Web routes file already exists');
+        }
+    }
+
+    /**
+     * Get web routes file content
+     */
+    protected function getWebRoutesFileContent(): string
+    {
+        return <<<'PHP'
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make something great!
+|
+*/
+
+Route::get('/', function () {
+    return view('welcome');
+});
+
+// KaelyAuth routes are automatically loaded by the package
+// Available routes:
+// - /login (GET, POST)
+// - /register (GET, POST)
+// - /forgot-password (GET, POST)
+// - /reset-password/{token} (GET, POST)
+// - /verify-email (GET)
+// - /dashboard (GET) - requires auth
+// - /profile (GET, PUT) - requires auth
+// - /change-password (GET, PUT) - requires auth
+// - /logout (POST) - requires auth
+// - /admin/* (GET) - requires auth and admin permissions
+PHP;
+    }
+
+    /**
      * Display next steps
      */
     protected function displayNextSteps(string $type): void
@@ -156,9 +220,13 @@ class InstallUICommand extends Command
                 $this->info("   <link rel=\"stylesheet\" href=\"/vendor/kaely-auth/css/kaely-auth.css\">");
                 $this->info("2. Include the JavaScript file in your layout:");
                 $this->info("   <script src=\"/vendor/kaely-auth/js/kaely-auth.js\"></script>");
-                $this->info("3. Use the Blade components in your views:");
-                $this->info("   @include('kaely-auth::blade.login')");
-                $this->info("   @include('kaely-auth::blade.register')");
+                $this->info("3. Web routes are automatically loaded by the package");
+                $this->info("4. Available routes:");
+                $this->info("   - /login (GET, POST)");
+                $this->info("   - /register (GET, POST)");
+                $this->info("   - /dashboard (GET) - requires auth");
+                $this->info("   - /profile (GET, PUT) - requires auth");
+                $this->info("   - /logout (POST) - requires auth");
                 break;
                 
             case 'livewire':
@@ -167,10 +235,14 @@ class InstallUICommand extends Command
                 $this->info("   <link rel=\"stylesheet\" href=\"/vendor/kaely-auth/css/kaely-auth.css\">");
                 $this->info("2. Include the JavaScript file in your layout:");
                 $this->info("   <script src=\"/vendor/kaely-auth/js/kaely-auth.js\"></script>");
-                $this->info("3. Use the Livewire components in your views:");
-                $this->info("   <livewire:kaely-auth.login-form />");
-                $this->info("   <livewire:kaely-auth.register-form />");
-                $this->info("4. Make sure Livewire is properly configured in your app");
+                $this->info("3. Web routes are automatically loaded by the package");
+                $this->info("4. Available routes:");
+                $this->info("   - /login (GET, POST)");
+                $this->info("   - /register (GET, POST)");
+                $this->info("   - /dashboard (GET) - requires auth");
+                $this->info("   - /profile (GET, PUT) - requires auth");
+                $this->info("   - /logout (POST) - requires auth");
+                $this->info("5. Make sure Livewire is properly configured in your app");
                 break;
         }
         
