@@ -36,13 +36,13 @@ class InstallApiCommand extends Command
         // Run migrations
         $this->runMigrations($noInteraction);
 
-        // Create API routes
-        $this->createApiRoutes();
+        // Note: API routes are handled by the package's own route file
+        $this->info('✅ API routes are automatically loaded by the package');
 
-        // Create API controllers
+        // Create API controllers (only if they don't exist)
         $this->createApiControllers();
 
-        // Create API middleware
+        // Create API middleware (only if it doesn't exist)
         $this->createApiMiddleware();
 
         $this->info('✅ API authentication installed successfully!');
@@ -143,56 +143,38 @@ class InstallApiCommand extends Command
         }
     }
 
-    /**
-     * Create API routes
-     */
-    protected function createApiRoutes(): void
-    {
-        $this->info('🛣️ Creating API routes...');
-        
-        $routesPath = base_path('routes/api.php');
-        $apiRoutes = $this->getApiRoutes();
-        
-        if (File::exists($routesPath)) {
-            $currentContent = File::get($routesPath);
-            
-            // Check if routes already exist
-            if (strpos($currentContent, '// KaelyAuth API Routes') === false) {
-                $newContent = $currentContent . "\n" . $apiRoutes;
-                File::put($routesPath, $newContent);
-                $this->info('✅ API routes added to routes/api.php');
-            } else {
-                $this->info('✅ API routes already exist');
-            }
-        }
-    }
+
 
     /**
      * Create API controllers
      */
     protected function createApiControllers(): void
     {
-        $this->info('🎮 Creating API controllers...');
+        $this->info('🎮 Checking API controllers...');
         
         $controllersDir = app_path('Http/Controllers/Api');
         if (!File::exists($controllersDir)) {
             File::makeDirectory($controllersDir, 0755, true);
         }
 
-        // Create AuthController
+        // Create AuthController only if it doesn't exist
         $authControllerPath = $controllersDir . '/AuthController.php';
         if (!File::exists($authControllerPath)) {
             $authController = $this->getAuthController();
             File::put($authControllerPath, $authController);
             $this->info('✅ AuthController created');
+        } else {
+            $this->info('✅ AuthController already exists');
         }
 
-        // Create UserController
+        // Create UserController only if it doesn't exist
         $userControllerPath = $controllersDir . '/UserController.php';
         if (!File::exists($userControllerPath)) {
             $userController = $this->getUserController();
             File::put($userControllerPath, $userController);
             $this->info('✅ UserController created');
+        } else {
+            $this->info('✅ UserController already exists');
         }
     }
 
@@ -201,44 +183,25 @@ class InstallApiCommand extends Command
      */
     protected function createApiMiddleware(): void
     {
-        $this->info('🛡️ Creating API middleware...');
+        $this->info('🛡️ Checking API middleware...');
         
         $middlewareDir = app_path('Http/Middleware');
         if (!File::exists($middlewareDir)) {
             File::makeDirectory($middlewareDir, 0755, true);
         }
 
-        // Create ApiAuthMiddleware
+        // Create ApiAuthMiddleware only if it doesn't exist
         $apiAuthMiddlewarePath = $middlewareDir . '/ApiAuthMiddleware.php';
         if (!File::exists($apiAuthMiddlewarePath)) {
             $apiAuthMiddleware = $this->getApiAuthMiddleware();
             File::put($apiAuthMiddlewarePath, $apiAuthMiddleware);
             $this->info('✅ ApiAuthMiddleware created');
+        } else {
+            $this->info('✅ ApiAuthMiddleware already exists');
         }
     }
 
-    /**
-     * Get API routes content
-     */
-    protected function getApiRoutes(): string
-    {
-        return <<<'PHP'
 
-// KaelyAuth API Routes
-Route::prefix('auth')->group(function () {
-    Route::post('/register', [App\Http\Controllers\Api\AuthController::class, 'register']);
-    Route::post('/login', [App\Http\Controllers\Api\AuthController::class, 'login']);
-    Route::post('/logout', [App\Http\Controllers\Api\AuthController::class, 'logout'])->middleware('auth:sanctum');
-    Route::post('/refresh', [App\Http\Controllers\Api\AuthController::class, 'refresh'])->middleware('auth:sanctum');
-});
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', [App\Http\Controllers\Api\UserController::class, 'profile']);
-    Route::put('/user', [App\Http\Controllers\Api\UserController::class, 'update']);
-});
-
-PHP;
-    }
 
     /**
      * Get AuthController content
