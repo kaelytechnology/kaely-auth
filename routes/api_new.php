@@ -5,6 +5,7 @@ use Kaely\Auth\Controllers\{
     AuthController,
     OAuthController
 };
+use Kaely\Auth\Http\Controllers\TestController;
 use Kaely\Auth\Controllers\Api\V1\{
     UserController,
     RoleController,
@@ -27,6 +28,10 @@ use Kaely\Auth\Controllers\Api\V1\{
 */
 
 Route::prefix('api')->group(function () {
+    // Test routes
+    Route::get('test', [TestController::class, 'test']);
+    Route::post('test/login', [TestController::class, 'testLogin']);
+    
     // Public routes
     Route::post('login', [AuthController::class, 'login']);
     Route::post('register', [AuthController::class, 'register']);

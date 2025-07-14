@@ -3,11 +3,17 @@
 use Illuminate\Support\Facades\Route;
 use Kaely\Auth\Http\Controllers\{
     WebAuthController,
-    OAuthController
+    OAuthController,
+    WebTestController
 };
 
 // Ensure web middleware is applied
 Route::middleware('web')->group(function () {
+
+// Test routes
+Route::get('/test', [WebTestController::class, 'test']);
+Route::get('/test/login', [WebTestController::class, 'testLogin']);
+Route::get('/test/register', [WebTestController::class, 'testRegister']);
 
 /*
 |--------------------------------------------------------------------------

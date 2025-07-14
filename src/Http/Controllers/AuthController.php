@@ -9,8 +9,6 @@ use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Facades\Socialite;
 use Kaely\Auth\KaelyAuthManager;
 use Kaely\Auth\Services\OAuthService;
-use Kaely\Auth\Models\User;
-use Kaely\Auth\Models\Person;
 
 class AuthController extends Controller
 {
@@ -28,29 +26,51 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-
-        if (!Auth::attempt($request->only('email', 'password'))) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
+        try {
+            $request->validate([
+                'email' => 'required|email',
+                'password' => 'required',
             ]);
+
+            if (!Auth::attempt($request->only('email', 'password'))) {
+                throw ValidationException::withMessages([
+                    'email' => ['The provided credentials are incorrect.'],
+                ]);
+            }
+
+            $user = Auth::user();
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            // Simplified response without authManager dependencies
+            return response()->json([
+                'success' => true,
+                'message' => 'Login successful',
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'email_verified_at' => $user->email_verified_at,
+                    'created_at' => $user->created_at,
+                    'updated_at' => $user->updated_at,
+                ],
+                'token' => $token,
+                'permissions' => [], // Will be implemented later
+                'roles' => [], // Will be implemented later
+                'menu' => [] // Will be implemented later
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('KaelyAuth API Login Error', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Login failed',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $user = Auth::user();
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Login successful',
-            'user' => $user,
-            'token' => $token,
-            'permissions' => $this->authManager->getUserPermissions($user),
-            'roles' => $this->authManager->getUserRoles($user),
-            'menu' => $this->authManager->getUserMenu($user)
-        ]);
     }
 
     /**
@@ -58,36 +78,52 @@ class AuthController extends Controller
      */
     public function register(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => 'required|string|min:8|confirmed',
+            ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+            // Use the project's User model
+            $userModel = config('auth.providers.users.model', \App\Models\User::class);
+            $user = $userModel::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
 
-        // Create associated person record
-        Person::create([
-            'user_id' => $user->id,
-            'name' => $request->name,
-            'email' => $request->email,
-        ]);
+            $token = $user->createToken('auth_token')->plainTextToken;
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+            return response()->json([
+                'success' => true,
+                'message' => 'Registration successful',
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'email_verified_at' => $user->email_verified_at,
+                    'created_at' => $user->created_at,
+                    'updated_at' => $user->updated_at,
+                ],
+                'token' => $token,
+                'permissions' => [], // Will be implemented later
+                'roles' => [], // Will be implemented later
+                'menu' => [] // Will be implemented later
+            ], 201);
+        } catch (\Exception $e) {
+            \Log::error('KaelyAuth API Register Error', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Registration successful',
-            'user' => $user,
-            'token' => $token,
-            'permissions' => $this->authManager->getUserPermissions($user),
-            'roles' => $this->authManager->getUserRoles($user),
-            'menu' => $this->authManager->getUserMenu($user)
-        ], 201);
+            return response()->json([
+                'success' => false,
+                'message' => 'Registration failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

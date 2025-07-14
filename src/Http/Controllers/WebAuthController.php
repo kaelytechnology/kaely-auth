@@ -9,7 +9,6 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
 use Kaely\Auth\KaelyAuthManager;
-use Kaely\Auth\Models\User;
 
 class WebAuthController extends Controller
 {
@@ -91,11 +90,13 @@ class WebAuthController extends Controller
                 'password' => 'required|string|min:8|confirmed',
             ]);
 
-                    $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+            // Use the project's User model instead of package model
+            $userModel = config('auth.providers.users.model', \App\Models\User::class);
+            $user = $userModel::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
 
             Auth::login($user);
 
@@ -213,7 +214,9 @@ class WebAuthController extends Controller
      */
     public function verifyEmail(Request $request, $id, $hash)
     {
-        $user = User::find($id);
+        // Use the project's User model instead of package model
+        $userModel = config('auth.providers.users.model', \App\Models\User::class);
+        $user = $userModel::find($id);
 
         if (!$user || !hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
             return redirect()->route('login')->withErrors(['email' => 'Invalid verification link.']);
