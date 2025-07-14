@@ -248,5 +248,8 @@ PHP;
         
         $this->info("\n📖 Documentation: https://kaely-auth.com/docs/ui");
         $this->info("🐛 Issues: https://github.com/kaelytechnology/kaely-auth/issues");
+        $this->info("\n💡 Note: The UI components are designed to work without Vite.");
+        $this->info("   If you see Vite manifest errors, they can be safely ignored.");
+        $this->info("   The components use CDN resources and inline styles for compatibility.");
     }
 } 
