@@ -26,7 +26,28 @@ A comprehensive Laravel package for advanced authentication and authorization wi
 
 ## 🚀 Quick Installation
 
-### Interactive Installation (Recommended)
+### Step 1: Add Repository to composer.json
+
+First, add the repository to your `composer.json`:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/kaelytechnology/kaely-auth"
+        }
+    ]
+}
+```
+
+### Step 2: Install the Package
+
+```bash
+composer require kaelytechnology/kaely-auth:"v1.0.0"
+```
+
+### Step 3: Run Interactive Installation (Recommended)
 
 ```bash
 php artisan kaely:install
@@ -55,11 +76,100 @@ php artisan kaely:install --skip-wizard
 php artisan kaely:install --force
 ```
 
+### Alternative Installation Methods
+
+#### For New Laravel Projects
+```bash
+# 1. Create new Laravel project
+composer create-project laravel/laravel my-project
+
+# 2. Add repository to composer.json
+# (Add the repositories section as shown above)
+
+# 3. Install KaelyAuth
+composer require kaelytechnology/kaely-auth:"v1.0.0"
+
+# 4. Run installer
+php artisan kaely:install
+```
+
+#### For Existing Laravel Projects
+```bash
+# 1. Add repository to composer.json
+# (Add the repositories section as shown above)
+
+# 2. Install KaelyAuth
+composer require kaelytechnology/kaely-auth:"v1.0.0"
+
+# 3. Run installer
+php artisan kaely:install
+
+# 4. Publish configurations (optional)
+php artisan vendor:publish --tag=kaely-auth-config
+```
+
+#### For Production Deployment
+```bash
+# 1. Add repository to composer.json
+# (Add the repositories section as shown above)
+
+# 2. Install specific version
+composer require kaelytechnology/kaely-auth:"v1.0.0" --no-dev
+
+# 3. Run installer in production mode
+php artisan kaely:install --force --skip-wizard
+
+# 4. Optimize for production
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
 ## 📋 Requirements
 
 - Laravel 8.0 or higher
 - PHP 8.0 or higher
 - At least one authentication package (Sanctum, Breeze, or Jetstream)
+
+## 🔧 Troubleshooting
+
+### Common Installation Issues
+
+#### Repository Not Found
+```bash
+# Error: Could not find package kaelytechnology/kaely-auth
+# Solution: Make sure you added the repository correctly
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/kaelytechnology/kaely-auth"
+        }
+    ]
+}
+```
+
+#### Version Not Found
+```bash
+# Error: Could not find a version of package kaelytechnology/kaely-auth
+# Solution: Use the exact version
+composer require kaelytechnology/kaely-auth:"v1.0.0"
+```
+
+#### Composer Cache Issues
+```bash
+# Clear composer cache and try again
+composer clear-cache
+composer require kaelytechnology/kaely-auth:"v1.0.0"
+```
+
+#### Laravel Version Compatibility
+```bash
+# Check your Laravel version
+php artisan --version
+
+# Make sure you're using Laravel 8.0+ and PHP 8.0+
+```
 
 ## 🔧 Configuration
 
@@ -353,6 +463,15 @@ php artisan kaely:setup-multitenancy
 
 # Create a new tenant
 php artisan kaely:create-tenant
+```
+
+### Release Management
+```bash
+# Quick release commands (see RELEASE_PROCESS.md for details)
+git tag -d v1.0.0
+git push origin :refs/tags/v1.0.0
+git tag -a v1.0.0 -m "Release v1.0.0 - Description"
+git push origin v1.0.0
 ```
 
 ### Maintenance & Export
