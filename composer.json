@@ -62,7 +62,6 @@
         "source": "https://github.com/kaely/auth",
         "docs": "https://github.com/kaely/auth/blob/main/README.md"
     },
-    "homepage": "https://github.com/kaely/auth", 
-    "version": "1.0.0"
-
-} 
+    "homepage": "https://github.com/kaely/auth",
+    "version": "2.0.2"
+}
